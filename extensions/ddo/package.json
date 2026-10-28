@@ -1,0 +1,275 @@
+{
+  "name": "ddo",
+  "displayName": "DuckDuckOps",
+  "description": "Terminal-first workstation: terminal with files below it, AI chat on the right.",
+  "version": "0.1.0",
+  "publisher": "ddo",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "main": "./extension.js",
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "ddo.focusTerminal",
+        "title": "Focus Terminal",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.focusChat",
+        "title": "Focus AI Chat",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.clearTerminal",
+        "title": "Clear Terminal",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.openLog",
+        "title": "Open Log / Text File...",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.toggleTail",
+        "title": "Toggle Live Tail (Active File)",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.newTerminalWithProfile",
+        "title": "New Terminal with Profile...",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.addProfile",
+        "title": "Add Shell Profile...",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.editProfiles",
+        "title": "Edit Shell Profiles (settings)",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.runInTerminal",
+        "title": "Run Command in Terminal",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.askAboutSelection",
+        "title": "Ask Chat About Selection / Log",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.installVsixFolder",
+        "title": "Install VSIX Files from Internal Folder",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.resetLayout",
+        "title": "Reset Layout (Terminal + Chat Right)",
+        "category": "DuckDuckOps"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ddo.focusTerminal",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t"
+      },
+      {
+        "command": "ddo.focusChat",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c"
+      },
+      {
+        "command": "ddo.openLog",
+        "key": "ctrl+alt+o",
+        "mac": "cmd+alt+o"
+      },
+      {
+        "command": "ddo.clearTerminal",
+        "key": "ctrl+alt+k",
+        "mac": "cmd+alt+k"
+      },
+      {
+        "command": "ddo.toggleTail",
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l"
+      },
+      {
+        "command": "ddo.newTerminalWithProfile",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n"
+      },
+      {
+        "command": "ddo.askAboutSelection",
+        "key": "ctrl+alt+a",
+        "mac": "cmd+alt+a"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "ddo.ops",
+        "name": "ops",
+        "fullName": "DuckDuckOps Terminal",
+        "description": "Terminal, ops and log analysis assistant (sees your recent terminal output)",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "explain",
+            "description": "Explain the last terminal output / error"
+          },
+          {
+            "name": "fix",
+            "description": "Suggest commands to fix the last failure"
+          },
+          {
+            "name": "logs",
+            "description": "Analyze the active log file (errors, patterns, timeline)"
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "DuckDuckOps",
+      "properties": {
+        "ddo.profiles": {
+          "type": "array",
+          "markdownDescription": "Custom shell profiles. Each: `name`, `path`, optional `args`, `env`, `cwd`. See `examples/profiles.json`.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "path"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "env": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "cwd": {
+                "type": "string"
+              }
+            }
+          },
+          "default": []
+        },
+        "ddo.defaultProfile": {
+          "type": "string",
+          "default": "",
+          "description": "Name of the profile used for the terminal opened at startup. Empty = system default shell."
+        },
+        "ddo.systemPrompt": {
+          "type": "string",
+          "default": "You are DuckDuckOps, an operations assistant embedded next to the user's terminal. You are NOT a coding assistant. Focus on shell usage, system administration, troubleshooting and log analysis. Be concise. When you suggest commands, put each in its own fenced ```sh block, one command (or pipeline) per block, and explain risks before anything destructive. Prefer read-only diagnostics first. Reference the supplied terminal output and log excerpts when reasoning.",
+          "editPresentation": "multilineText",
+          "description": "System instructions for the @ops chat participant."
+        },
+        "ddo.chat.terminalContextChars": {
+          "type": "number",
+          "default": 8000,
+          "description": "Max characters of recent terminal output sent to the chat."
+        },
+        "ddo.chat.confirmBeforeRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ask for confirmation before running a chat-suggested command."
+        },
+        "ddo.logs.autoOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Reveal newly created .log/.txt files (created or modified by terminal commands) in the main area."
+        },
+        "ddo.logs.autoTail": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable live tail (follow end of file) automatically for .log files."
+        },
+        "ddo.logs.maxAnalyzeChars": {
+          "type": "number",
+          "default": 24000,
+          "description": "Max characters of a log (tail) sent to the chat for /logs."
+        },
+        "ddo.extensions.vsixFolder": {
+          "type": "string",
+          "default": "",
+          "description": "Folder with internal .vsix files, installed by 'Install VSIX Files from Internal Folder'."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "workbench.startupEditor": "none",
+      "workbench.editor.empty.hint": "hidden",
+      "workbench.tips.enabled": false,
+      "window.commandCenter": false,
+      "breadcrumbs.enabled": false,
+      "update.showReleaseNotes": false,
+      "terminal.integrated.defaultLocation": "view",
+      "terminal.integrated.shellIntegration.enabled": true,
+      "terminal.integrated.scrollback": 20000,
+      "terminal.integrated.fontSize": 13,
+      "terminal.integrated.cursorBlinking": true,
+      "terminal.integrated.enablePersistentSessions": true,
+      "files.autoSave": "off",
+      "[log]": {
+        "editor.wordWrap": "on",
+        "editor.minimap.enabled": false,
+        "editor.folding": false,
+        "editor.glyphMargin": false,
+        "editor.lineNumbers": "on",
+        "editor.renderLineHighlight": "none",
+        "editor.stickyScroll.enabled": false,
+        "editor.scrollBeyondLastLine": false,
+        "editor.occurrencesHighlight": "off",
+        "editor.codeLens": false,
+        "editor.quickSuggestions": {
+          "other": false,
+          "comments": false,
+          "strings": false
+        }
+      },
+      "[plaintext]": {
+        "editor.wordWrap": "on",
+        "editor.minimap.enabled": false,
+        "editor.folding": false,
+        "editor.glyphMargin": false,
+        "editor.lineNumbers": "on",
+        "editor.renderLineHighlight": "none",
+        "editor.stickyScroll.enabled": false,
+        "editor.scrollBeyondLastLine": false
+      }
+    }
+  }
+}

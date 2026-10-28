@@ -1,0 +1,10 @@
+// Example user settings.json for DuckDuckOps
+{
+  "terminal.integrated.fontFamily": "'JetBrains Mono', Menlo, monospace",
+  "terminal.integrated.fontSize": 13,
+  "ddo.systemPrompt": "You are an SRE assistant. Be terse. Always propose read-only diagnostics first. Use fenced sh blocks, one command each.",
+  "ddo.logs.autoOpen": true,
+  "ddo.logs.autoTail": true,
+  "ddo.chat.confirmBeforeRun": true,
+  "ddo.extensions.vsixFolder": "/mnt/shared/vsix"
+}

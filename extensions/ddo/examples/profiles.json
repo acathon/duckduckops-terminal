@@ -1,0 +1,13 @@
+// Paste into settings.json (DuckDuckOps: "Edit Shell Profiles")
+{
+  "ddo.defaultProfile": "Prod Ops (bash)",
+  "ddo.profiles": [
+    { "name": "Prod Ops (bash)", "path": "/bin/bash", "args": ["--login"], "cwd": "~/ops", "env": { "ENVIRONMENT": "prod", "AWS_PROFILE": "ops" } },
+    { "name": "zsh", "path": "/bin/zsh", "args": ["-l"] },
+    { "name": "PowerShell 7", "path": "pwsh", "args": ["-NoLogo"] },
+    { "name": "Jump host", "path": "ssh", "args": ["-t", "ops@jump.internal.example"] },
+    { "name": "Custom script", "path": "/opt/company/bin/ops-shell.sh", "env": { "OPS_REGION": "eu-west-1" } }
+  ],
+  // Native VS Code profiles also work and show in the terminal dropdown:
+  "terminal.integrated.profiles.linux": { "ops-bash": { "path": "/bin/bash", "args": ["--login"], "env": { "ENVIRONMENT": "prod" } } }
+}
