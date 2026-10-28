@@ -59,7 +59,7 @@ try {
 	await window.waitForTimeout(15_000);
 
 	activityBar = await window.$$eval('.part.activitybar .action-item .action-label', items => items.map(item => item.getAttribute('aria-label') ?? ''));
-	await window.screenshot({ path: path.join(outDir, 'ddo.png') });
+	await window.screenshot({ path: path.join(outDir, 'desktop-terminal.png') });
 
 	// Terminal, then chat, then the side bar (Extensions) and the activity bar on the right
 	const box = async (selector: string) => (await window.$(selector))?.boundingBox() ?? null;
@@ -81,7 +81,7 @@ try {
 		const [terminal, editor] = await Promise.all([box('.part.panel'), box('.part.editor')]);
 		return !!terminal && !!editor && editor.y >= terminal.y + terminal.height - 1;
 	}, () => false);
-	await window.screenshot({ path: path.join(outDir, 'ddo-file.png') });
+	await window.screenshot({ path: path.join(outDir, 'desktop-file.png') });
 } finally {
 	await app.close().catch(() => undefined);
 }

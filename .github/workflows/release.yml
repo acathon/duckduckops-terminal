@@ -1,0 +1,187 @@
+name: Build and release
+
+# Every branch push and pull request builds the Windows x64 app on a GitHub-hosted
+# runner (it has the C++ build tools the native modules need), launches it once
+# with a fresh profile to check the layout, and keeps the app as a zip plus the
+# screenshots, activity bar entries, renderer errors and logs as build artifacts,
+# so a branch can be tried before it is merged.
+#
+# Merging to main publishes a GitHub release `ddo-<version>` for `forge.version` in
+# product.json if it has none yet, using that version's section of CHANGELOG.md as
+# the release notes (the build fails if the section is missing).
+# To ship: bump `forge.version` in product.json, add its CHANGELOG.md section and
+# screenshots, merge to main.
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+      - 'fix/**'
+      - 'chore/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ddo-build-${{ github.ref }}
+  # A release from main is never cancelled halfway
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  windows:
+    name: Windows x64
+    runs-on: windows-2022
+    timeout-minutes: 180
+    env:
+      VSCODE_ARCH: x64
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Version
+        id: meta
+        shell: pwsh
+        run: |
+          $version = (Get-Content product.json -Raw | ConvertFrom-Json).forge.version
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      # Fails early when this version has no changelog entry
+      - name: Release notes
+        shell: pwsh
+        run: node build/ddo/releaseNotes.ts
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          . build/azure-pipelines/win32/exec.ps1
+          $ErrorActionPreference = "Stop"
+
+          # Run preinstall script before root dependencies are installed
+          # so that Electron/v8 headers are patched correctly for native modules.
+          exec { node build/npm/preinstall.ts }
+
+          for ($i = 1; $i -le 3; $i++) {
+            try {
+              exec { npm ci }
+              break
+            }
+            catch {
+              if ($i -eq 3) {
+                Write-Error "npm ci failed after 3 attempts"
+                throw
+              }
+              Write-Host "npm ci failed attempt $i, retrying..."
+              Start-Sleep -Seconds 2
+            }
+          }
+        env:
+          npm_config_arch: x64
+          npm_config_foreground_scripts: "true"
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Put signtool on PATH
+        shell: pwsh
+        run: |
+          # Packaging strips Authenticode signatures with signtool.exe from the Windows SDK,
+          # which the runner has installed but not on PATH
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $signtool) {
+            throw "signtool.exe not found in the Windows SDK"
+          }
+          Write-Host "Using $($signtool.FullName)"
+          $signtool.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Package DuckDuckOps
+        shell: pwsh
+        run: npm run gulp vscode-win32-x64-min
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Launch, check the layout and take screenshots
+        shell: pwsh
+        run: node build/ddo/smoke.ts ..\VSCode-win32-x64 .build\ddo-smoke
+
+      - name: Zip the app
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: Compress-Archive -Path ..\VSCode-win32-x64\* -DestinationPath .build\DuckDuckOps-Terminal-win32-x64-${{ steps.meta.outputs.version }}.zip
+
+      - name: Upload the app
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: DuckDuckOps-Terminal-win32-x64-${{ steps.meta.outputs.version }}-${{ github.sha }}
+          path: .build/DuckDuckOps-Terminal-win32-x64-${{ steps.meta.outputs.version }}.zip
+          if-no-files-found: ignore
+
+      - name: Upload screenshots and logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ddo-smoke-${{ steps.meta.outputs.version }}-${{ github.sha }}
+          path: .build/ddo-smoke
+          if-no-files-found: ignore
+
+  release:
+    name: Publish release and refresh notes
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Download the app
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: DuckDuckOps-Terminal-win32-x64-${{ needs.windows.outputs.version }}-${{ github.sha }}
+
+      - name: Publish release and refresh notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.windows.outputs.version }}
+        run: |
+          body() {
+            node build/ddo/releaseNotes.ts "$1"
+            echo
+            echo "---"
+            echo "Install: download \`DuckDuckOps-Terminal-win32-x64-$1.zip\` from the assets, extract it and run \`DuckDuckOps.exe\`."
+            echo "Every change in every version: [CHANGELOG.md](https://github.com/$GITHUB_REPOSITORY/blob/main/CHANGELOG.md)."
+          }
+
+          # Publish this version if it has no release yet
+          if ! gh release view "ddo-$VERSION" >/dev/null 2>&1; then
+            body "$VERSION" > release-body.md
+            gh release create "ddo-$VERSION" "DuckDuckOps-Terminal-win32-x64-$VERSION.zip" \
+              --target "$GITHUB_SHA" \
+              --title "ddo-$VERSION" \
+              --notes-file release-body.md
+          fi
+
+          # Keep the notes of every released version equal to its CHANGELOG.md section
+          # (this also fixes releases that were published with generic notes)
+          for v in $(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | tr -d '#[] '); do
+            if gh release view "ddo-$v" >/dev/null 2>&1; then
+              body "$v" > release-body.md
+              gh release edit "ddo-$v" --title "ddo-$v" --notes-file release-body.md
+            fi
+          done

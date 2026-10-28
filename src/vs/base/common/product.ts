@@ -288,6 +288,12 @@ export interface IProductConfiguration {
 	readonly forge?: {
 		readonly enabled: boolean;
 		/**
+		 * The DuckDuckOps version (`version` is the VS Code version that
+		 * extensions check their engine against). Merging a version without a
+		 * GitHub release to `main` releases it, see `CHANGELOG.md`.
+		 */
+		readonly version?: string;
+		/**
 		 * Folder names (under `extensions/`) of the built-in extensions that
 		 * are built, shipped and loaded. Others are left out.
 		 */

@@ -102,27 +102,30 @@ npm run watch            # or: npm run compile
 npm run gulp vscode-win32-x64-min    # packaged app in ../VSCode-win32-x64 (also -darwin-arm64, -linux-x64)
 ```
 
-**Without local build tools:** [`.github/workflows/ddo-build.yml`](.github/workflows/ddo-build.yml)
-builds the Windows app on GitHub on every push to `main`, `feature/*` or `hotfix/*`. It uploads
-`DuckDuckOps-win32-x64` (the app as a zip) and `ddo-smoke` (screenshots after first launch and
-after opening a file, layout checks, the activity bar entries, renderer errors and logs, from
-[`build/ddo/smoke.ts`](build/ddo/smoke.ts)).
+**Without local build tools:** [`.github/workflows/release.yml`](.github/workflows/release.yml)
+builds the Windows app on GitHub on every branch push and pull request. It keeps the app as a zip
+and `ddo-smoke` (screenshots after first launch and after opening a file, layout checks, the
+activity bar entries, renderer errors and logs, from [`build/ddo/smoke.ts`](build/ddo/smoke.ts))
+as build artifacts, so a branch can be tried before it is merged.
 
 ## Branches and releases
 
-- `main` is always releasable. Work happens on `feature/<name>` or `hotfix/<name>` branches (e.g.
-  `feature/ssh-profiles`, `hotfix/startup-crash`), nothing else.
-- A finished feature or hotfix is merged into `main` and released with a version tag named
-  `ddo-<version>`: a feature bumps the minor version (`ddo-0.2.0`), a hotfix the patch version
-  (`ddo-0.2.1`).
-- Pushing the tag builds the app and, if the layout checks pass, publishes a GitHub Release of the
-  same name with `DuckDuckOps-Terminal-win32-x64-<version>.zip` and notes from the commits.
+- Work happens on `feat/<name>`, `fix/<name>` or `chore/<name>` branches (e.g. `feat/ssh-profiles`,
+  `fix/startup-crash`, `chore/release-notes`), one commit per step, with the version in the subject
+  of the commit that ships it: `SSH profiles (0.2.0)`.
+- The version is `forge.version` in [`product.json`](product.json) (`version` there is the VS Code
+  version that extensions check). A feature bumps the minor version, a fix the patch version.
+- Every version has a section in [`CHANGELOG.md`](CHANGELOG.md) with screenshots in
+  `docs/screenshots/<version>/`. The build fails without the section.
+- Merging to `main` releases the version if it has no release yet: GitHub Release `ddo-<version>`
+  with `DuckDuckOps-Terminal-win32-x64-<version>.zip` and the changelog section as its notes.
+  Every merge also refreshes the notes of the released versions from the changelog.
 
 ```bash
+# bump forge.version, add the CHANGELOG.md section and screenshots, commit, then
 git switch main
-git merge --no-ff feature/ssh-profiles
-git tag ddo-0.2.0
-git push origin main ddo-0.2.0
+git merge --ff-only feat/ssh-profiles
+git push origin main
 ```
 
 ## Upstream

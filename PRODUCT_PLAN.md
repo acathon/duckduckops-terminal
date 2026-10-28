@@ -120,5 +120,5 @@ capture, tail and profile logic move into `vs/forge/contrib/*` in milestones 3â€
 - The Copilot CLI runtime (Agent Host, Background Agent / Copilot CLI sessions) is left out unless
   `forge.copilotRuntime` is set in `product.json`; the smoke test lists related errors from the logs
   (`copilotRuntimeLogLines`).
-- `.github/workflows/ddo-build.yml` packages the Windows app on GitHub and uploads it with a
+- `.github/workflows/release.yml` packages the Windows app on GitHub and uploads it with a
   first-launch screenshot (`build/ddo/smoke.ts`).
