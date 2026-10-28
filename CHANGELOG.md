@@ -8,9 +8,9 @@ For each release, take screenshots of the build (`node build/ddo/smoke.ts <app f
 
 The first release of DuckDuckOps Terminal: a workstation for IT/ops that opens on a terminal with GitHub Copilot Chat beside it, built from VS Code with the coding features taken out.
 
-| On startup | With a file open |
+| On startup | With a log open |
 |---|---|
-| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.1.1/desktop-terminal.png?raw=true" width="420" alt="Terminal at the top left, Copilot Chat to its right, Extensions in the side bar on the far right"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.1.1/desktop-file.png?raw=true" width="420" alt="A file open below the terminal"> |
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.1.1/desktop-terminal.png?raw=true" width="420" alt="Terminal at the top left, Copilot Chat to its right, Extensions in the side bar on the far right"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.1.1/desktop-file.png?raw=true" width="420" alt="A log file open below the terminal, with live tail on"> |
 
 ### New
 - **Terminal first.** The terminal fills the top left, Copilot Chat sits to its right, and the side bar (Extensions, Accounts) is on the far right next to a compact activity bar. Toggle each part from the title bar or with `Ctrl+B`.

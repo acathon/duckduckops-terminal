@@ -72,15 +72,27 @@ try {
 	checks['no file area while nothing is open'] = workbenchClasses.includes('nomaineditorarea');
 	checks['rounded parts'] = workbenchClasses.includes('modern-ui');
 
-	// An opened file appears below the terminal
-	await window.keyboard.press('F1');
-	await window.keyboard.type('New Untitled Text File');
+	// An opened file (a log, through quick open) appears below the terminal
+	const logFile = path.join(profileDir, 'service.log');
+	fs.writeFileSync(logFile, [
+		'2026-10-28 09:14:02.118 INFO  [main] Service starting, version 4.2.1',
+		'2026-10-28 09:14:02.530 INFO  [db] Connected to db-01:5432 (pool size 20)',
+		'2026-10-28 09:14:03.004 WARN  [cache] Redis latency 412 ms above threshold 250 ms',
+		'2026-10-28 09:14:07.771 ERROR [http] GET /api/orders failed: upstream timed out after 30000 ms',
+		'2026-10-28 09:14:07.772 INFO  [http] Retrying request 1 of 3',
+		'2026-10-28 09:14:08.219 INFO  [http] GET /api/orders 200 (447 ms)',
+		'',
+	].join('\n'));
+	await window.keyboard.press('Control+P');
+	await window.keyboard.type(logFile);
 	await window.waitForTimeout(1_000);
 	await window.keyboard.press('Enter');
 	checks['file below terminal'] = await window.waitForSelector('.part.editor .monaco-editor', { state: 'visible', timeout: 15_000 }).then(async () => {
 		const [terminal, editor] = await Promise.all([box('.part.panel'), box('.part.editor')]);
 		return !!terminal && !!editor && editor.y >= terminal.y + terminal.height - 1;
 	}, () => false);
+	// Let the terminal's size overlay fade after the resize
+	await window.waitForTimeout(3_000);
 	await window.screenshot({ path: path.join(outDir, 'desktop-file.png') });
 } finally {
 	await app.close().catch(() => undefined);
