@@ -3,8 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import './media/forge.css';
 import { mainWindow } from '../../base/browser/window.js';
 import { Disposable } from '../../base/common/lifecycle.js';
+import { localize } from '../../nls.js';
 import { Extensions, IConfigurationRegistry } from '../../platform/configuration/common/configurationRegistry.js';
 import product from '../../platform/product/common/product.js';
 import { Registry } from '../../platform/registry/common/platform.js';
@@ -16,6 +18,7 @@ import { IEditorGroupsService } from '../../workbench/services/editor/common/edi
 import { IEditorService } from '../../workbench/services/editor/common/editorService.js';
 import { IWorkbenchLayoutService, Parts } from '../../workbench/services/layout/browser/layoutService.js';
 import { IPaneCompositePartService } from '../../workbench/services/panecomposite/browser/panecomposite.js';
+import { ForgeTerminalGreetingContribution, TERMINAL_GREETING_SETTING } from './forgeTerminalGreeting.js';
 
 // The files contribution (opening files) also registers the Explorer view
 // container. Take it out again before the views service picks it up: views
@@ -45,6 +48,8 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'workbench.layoutControl.type': 'toggles',
 		'workbench.experimental.modernUI': true,
 		'window.autoDetectColorScheme': true,
+		// The duck greets in the first terminal instead, see `ForgeTerminalGreetingContribution`
+		'terminal.integrated.initialHint': false,
 		// Copilot CLI sessions and the Codex agent need the Copilot CLI runtime
 		// (Agent Host), see `forge.copilotRuntime`
 		...(product.forge?.copilotRuntime ? {} : {
@@ -56,6 +61,21 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 	preventExperimentOverride: true,
 	source: 'forgeDefaults'
 }]);
+
+Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration({
+	id: 'ddo',
+	title: 'DuckDuckOps',
+	type: 'object',
+	properties: {
+		[TERMINAL_GREETING_SETTING]: {
+			type: 'boolean',
+			default: true,
+			description: localize('ddo.terminal.greeting', "Show the duck and how to reach the chat in the first terminal of a window."),
+		}
+	}
+});
+
+registerWorkbenchContribution2(ForgeTerminalGreetingContribution.ID, ForgeTerminalGreetingContribution, WorkbenchPhase.BlockRestore);
 
 /**
  * Starts every window with the terminal and the primary side bar shown.
