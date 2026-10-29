@@ -2,9 +2,10 @@
   "name": "ddo",
   "displayName": "DuckDuckOps",
   "description": "Terminal-first workstation: terminal with files below it, AI chat on the right.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "ddo",
   "license": "MIT",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -127,12 +128,16 @@
     ],
     "chatParticipants": [
       {
-        "id": "ddo.ops",
-        "name": "ops",
-        "fullName": "DuckDuckOps Terminal",
-        "description": "Terminal, ops and log analysis assistant (sees your recent terminal output)",
+        "id": "ddo.duck",
+        "name": "duck",
+        "fullName": "Duck",
+        "description": "Your rubber duck for the terminal (reads its recent output)",
         "isSticky": true,
         "commands": [
+          {
+            "name": "rubberduck",
+            "description": "Talk a problem through: the duck asks questions until you find the cause"
+          },
           {
             "name": "explain",
             "description": "Explain the last terminal output / error"
@@ -193,9 +198,9 @@
         },
         "ddo.systemPrompt": {
           "type": "string",
-          "default": "You are DuckDuckOps, an operations assistant embedded next to the user's terminal. You are NOT a coding assistant. Focus on shell usage, system administration, troubleshooting and log analysis. Be concise. When you suggest commands, put each in its own fenced ```sh block, one command (or pipeline) per block, and explain risks before anything destructive. Prefer read-only diagnostics first. Reference the supplied terminal output and log excerpts when reasoning.",
+          "default": "You are the duck of DuckDuckOps, an operations assistant next to the user's terminal. You are NOT a coding assistant. Focus on shell usage, system administration, troubleshooting and log analysis. Be calm and concise, no jokes. When you suggest commands, put each in its own fenced ```sh block, one command (or pipeline) per block, and explain risks before anything destructive. Prefer read-only diagnostics first. Reference the supplied terminal output and log excerpts when reasoning.",
           "editPresentation": "multilineText",
-          "description": "System instructions for the @ops chat participant."
+          "description": "System instructions for the @duck chat participant."
         },
         "ddo.chat.terminalContextChars": {
           "type": "number",

@@ -21,7 +21,7 @@ import { IMarkdownString, MarkdownString } from '../../../../../base/common/html
 import { Iterable } from '../../../../../base/common/iterator.js';
 import { Disposable, DisposableStore, IDisposable, MutableDisposable, thenIfNotDisposed, toDisposable } from '../../../../../base/common/lifecycle.js';
 import { ResourceSet } from '../../../../../base/common/map.js';
-import { Schemas } from '../../../../../base/common/network.js';
+import { FileAccess, Schemas } from '../../../../../base/common/network.js';
 import { IsSessionsWindowContext } from '../../../../common/contextkeys.js';
 import { filter } from '../../../../../base/common/objects.js';
 import { autorun, constObservable, derived, IObservable, IReader, observableFromEvent, observableValue } from '../../../../../base/common/observable.js';
@@ -1810,6 +1810,18 @@ export class ChatWidget extends Disposable implements IChatWidget {
 				icon: providerIcon ?? Codicon.sendToRemoteAgent,
 				additionalMessage,
 				useLargeIcon: !!providerIcon,
+			};
+		}
+
+		// DuckDuckOps: the duck, and how it reads the terminal (no "Generate Agent
+		// Instructions" hint, it is about codebases)
+		if (product.forge?.enabled) {
+			return {
+				title: localize('forgeChatTitle', "Ask the duck"),
+				message: new MarkdownString(localize('forgeChatMessage', "Start with `@duck` to include the terminal's recent output. `@duck /rubberduck` asks you questions until you find the cause yourself.") + '\n\n' + DISCLAIMER),
+				icon: FileAccess.asBrowserUri('vs/forge/browser/media/duck.png'),
+				iconIsImage: true,
+				useLargeIcon: true,
 			};
 		}
 

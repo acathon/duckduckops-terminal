@@ -127,6 +127,8 @@ export interface IChatViewWelcomeContent {
 	tips?: IMarkdownString;
 	readonly inputPart?: HTMLElement;
 	readonly useLargeIcon?: boolean;
+	/** Show a URI `icon` as the image it is, in its own colors, not as a mask */
+	readonly iconIsImage?: boolean;
 }
 
 export interface IChatViewWelcomeRenderOptions {
@@ -167,7 +169,9 @@ export class ChatViewWelcomePart extends Disposable {
 					const iconId = `chat-welcome-icon-${hash.digest()}`;
 					const iconClass = `.chat-welcome-view-icon.${iconId}`;
 
-					createCSSRule(iconClass, `
+					createCSSRule(iconClass, content.iconIsImage ? `
+					background: ${cssUrl} no-repeat 50% 50% / contain;
+				` : `
 					mask: ${cssUrl} no-repeat 50% 50%;
 					-webkit-mask: ${cssUrl} no-repeat 50% 50%;
 					background-color: var(--vscode-icon-foreground);
