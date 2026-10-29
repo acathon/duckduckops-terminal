@@ -15,7 +15,8 @@ function formatCopilotVersion(version: string | undefined): string {
 }
 
 export function createNativeAboutDialogDetails(productService: IProductService, osProps: IOSProperties): { title: string; details: string; detailsToCopy: string } {
-	let version = productService.version;
+	// DuckDuckOps shows its own version, then the VS Code version it is built on
+	let version = productService.forge?.version ? `${productService.forge.version} (VS Code ${productService.version})` : productService.version;
 	if (productService.target) {
 		version = `${version} (${productService.target} setup)`;
 	} else if (productService.darwinUniversalAssetId) {
