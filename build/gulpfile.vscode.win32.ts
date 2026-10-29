@@ -130,6 +130,11 @@ function buildWin32Setup(arch: string, target: string): task.CallbackTask {
 			}
 		}
 
+		// DuckDuckOps: Windows (Apps, the installer's file version) shows its own version
+		if (product.forge?.version) {
+			definitions['Version'] = definitions['RawVersion'] = product.forge.version;
+		}
+
 		fs.writeFileSync(productJsonPath, JSON.stringify(productJson, undefined, '\t'));
 
 		packageInnoSetup(issPath, { definitions }, cb as (err?: Error | null) => void);
