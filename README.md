@@ -1,3 +1,5 @@
+<p align="center"><img src="resources/brand/duck.png" width="180" alt="The DuckDuckOps duck: a rubber duck with a headset and a navy hoodie"></p>
+
 # DuckDuckOps Terminal
 
 A terminal-first workstation for IT/ops, built on a VS Code (Code - OSS) fork. It opens on a
@@ -16,6 +18,8 @@ VSIX files. Short name and command: `ddo`.
 
 - The area below the terminal appears when a file, log or web page (also one Copilot opens) is
   opened, as tabs, and disappears when the last one is closed.
+- The first terminal of a window starts with the duck and how to reach the chat. It is printed
+  before the shell starts and never sent to it. Turn it off with `ddo.terminal.greeting`.
 - Parts have rounded corners (the "Modern UI" style). The theme follows the Windows light/dark mode
   (Light 2026 / Dark 2026).
 - The side bar on the right is open at startup on Extensions. Switch views (Extensions, Accounts,
@@ -86,7 +90,15 @@ node build/ddo/checkServices.ts
 ## Shortcuts
 `Ctrl/Cmd+Alt+` **T** focus terminal · **C** focus chat · **O** open log · **K** clear terminal ·
 **L** toggle tail · **N** terminal with profile · **A** ask chat about selection.
-In chat, `@ops` sees recent terminal output (`/explain`, `/fix`, `/logs`).
+In chat, `@duck` sees recent terminal output (`/explain`, `/fix`, `/logs`). `@duck /rubberduck`
+asks you questions instead of answering, until you find the cause yourself.
+
+## Brand
+
+The duck is [`resources/brand/duck.png`](resources/brand/duck.png). The app icon
+(`resources/win32/code.ico`, the head alone at 32 px and below), the Start tiles, the Linux icon,
+the installer images, the chat and title bar images and the terminal greeting (24 x 24 pixels in
+half-block characters) are made from it.
 
 ## Build and run
 

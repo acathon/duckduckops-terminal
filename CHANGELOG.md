@@ -4,6 +4,30 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.2.0] - The duck
+
+DuckDuckOps now looks like itself: the duck is the app icon, greets you in the first terminal and waits in the chat as `@duck`.
+
+| On startup | With a log open |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.2.0/desktop-terminal.png?raw=true" width="420" alt="The pixel duck and how to reach the chat in the first terminal, the duck on the empty chat page"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.2.0/desktop-file.png?raw=true" width="420" alt="A log file open below the terminal"> |
+
+### New
+- **`@duck` in the chat** reads the terminal's recent output, as `@ops` did: `/explain`, `/fix`, `/logs`.
+- **`@duck /rubberduck`** talks a problem through with you: the duck asks one question at a time and lets you find the cause. Ask it directly and it answers.
+- **A greeting in the first terminal** of each window: the duck in pixels and how to reach the chat. It is printed before the shell starts, so your shell and scripts never see it. Turn it off with the `ddo.terminal.greeting` setting.
+- **The duck as the app icon**, on the taskbar, the Start menu tile, the title bar and the empty chat page.
+- **About** (Help menu) shows the DuckDuckOps version, then the VS Code version it is built on.
+
+### Things to know
+- `@ops` is now `@duck`.
+- The terminal no longer suggests typing `copilot`: the Copilot CLI is not part of DuckDuckOps.
+- The chat's empty page no longer offers to generate agent instructions for a codebase.
+
+### After updating
+- Download `DuckDuckOps-Terminal-win32-x64-0.2.0.zip` and extract it over the previous version, or next to it. Settings and extensions in `.ddo` are kept.
+- If the taskbar still shows the old icon, unpin DuckDuckOps and pin it again (Windows keeps icons in a cache).
+
 ## [0.1.1] - A terminal with Copilot next to it
 
 The first release of DuckDuckOps Terminal: a workstation for IT/ops that opens on a terminal with GitHub Copilot Chat beside it, built from VS Code with the coding features taken out.

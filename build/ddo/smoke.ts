@@ -71,6 +71,7 @@ try {
 	checks['extensions in side bar'] = await window.$('.part.sidebar .extensions-viewlet').then(element => !!element);
 	checks['no file area while nothing is open'] = workbenchClasses.includes('nomaineditorarea');
 	checks['rounded parts'] = workbenchClasses.includes('modern-ui');
+	checks['duck on the chat page'] = await window.$eval('.part.auxiliarybar .chat-welcome-view-title', title => title.textContent === 'Ask the duck').catch(() => false);
 
 	// An opened file (a log, through quick open) appears below the terminal
 	const logFile = path.join(profileDir, 'service.log');
