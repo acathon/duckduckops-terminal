@@ -38,6 +38,7 @@ internal code name), when `product.json` has `"forge": { "enabled": true }`.
 | Text editor (logs, Copilot diffs), multi-diff editor, Vim mode | Settings Sync, Profiles, Continue On, Remote Tunnels |
 | Integrated browser and Copilot's browser tools, Simple Browser | Process explorer, language status, inline chat in the editor |
 | Remote (for Open Remote - SSH etc.), accessibility | Copilot CLI runtime: Background Agent / Copilot CLI sessions, Agent Host |
+| Mermaid diagrams in chat | Agents window and "Open in Agents" |
 
 How it is done:
 
@@ -59,6 +60,12 @@ How it is done:
   the Agent Host is never started and Background Agent sessions are turned off. To ship it again, set
   `"copilotRuntime": true` under `forge` in [`product.json`](product.json), e.g. when the GitHub org
   enforces Copilot sandbox or permission settings, which need the Agent Host.
+- **What the build leaves out:** the standard workbench bundle and the Agents window
+  ([`build/next/index.ts`](build/next/index.ts), DuckDuckOps windows never load them; `--agents` and
+  agent session links open a DuckDuckOps window), Chromium's strings except English and French
+  ([`build/gulpfile.vscode.ts`](build/gulpfile.vscode.ts)), the TypeScript compiler shared by the
+  TypeScript language extensions ([`build/lib/extensions.ts`](build/lib/extensions.ts)) and the
+  Copilot CLI launcher. That is about 110 MB less than 0.1.1.
 - **Layout and defaults:** [`forge.contribution.ts`](src/vs/forge/browser/forge.contribution.ts),
   [`forgeWorkbench.ts`](src/vs/forge/browser/forgeWorkbench.ts) and the
   [`extensions/ddo`](extensions/ddo) extension.
