@@ -126,6 +126,20 @@
         "mac": "cmd+alt+a"
       }
     ],
+    "themes": [
+      {
+        "id": "Forge Light",
+        "label": "Forge Light",
+        "uiTheme": "vs",
+        "path": "./themes/forge-light-color-theme.json"
+      },
+      {
+        "id": "Forge Dark",
+        "label": "Forge Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/forge-dark-color-theme.json"
+      }
+    ],
     "chatParticipants": [
       {
         "id": "ddo.duck",
