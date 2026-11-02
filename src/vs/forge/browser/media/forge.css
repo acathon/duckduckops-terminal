@@ -1,0 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* The duck instead of the VS Code logo in the title bar */
+.monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon.window-appicon:not(.codicon) {
+	background-image: url('./duck-head.png');
+}

@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import './media/forge.css';
 import { mainWindow } from '../../base/browser/window.js';
 import { Disposable } from '../../base/common/lifecycle.js';
 import { Extensions, IConfigurationRegistry } from '../../platform/configuration/common/configurationRegistry.js';
@@ -46,10 +47,12 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'workbench.experimental.modernUI': true,
 		'window.autoDetectColorScheme': true,
 		// Copilot CLI sessions and the Codex agent need the Copilot CLI runtime
-		// (Agent Host), see `forge.copilotRuntime`
+		// (Agent Host), see `forge.copilotRuntime`. So does the terminal's first
+		// line hint, which offers to type `copilot`.
 		...(product.forge?.copilotRuntime ? {} : {
 			'github.copilot.chat.backgroundAgent.enabled': false,
 			'chat.agentHost.codexAgent.enabled': false,
+			'terminal.integrated.initialHint': false,
 		}),
 	},
 	donotCache: true,
