@@ -5,7 +5,11 @@
 
 import './media/forge.css';
 import { mainWindow } from '../../base/browser/window.js';
+import { Codicon } from '../../base/common/codicons.js';
 import { Disposable } from '../../base/common/lifecycle.js';
+import { localize } from '../../nls.js';
+import { MenuId, MenuRegistry } from '../../platform/actions/common/actions.js';
+import { BrowserViewCommandId } from '../../platform/browserView/common/browserView.js';
 import { Extensions, IConfigurationRegistry } from '../../platform/configuration/common/configurationRegistry.js';
 import product from '../../platform/product/common/product.js';
 import { Registry } from '../../platform/registry/common/platform.js';
@@ -45,7 +49,16 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'workbench.layoutControl.enabled': true,
 		'workbench.layoutControl.type': 'toggles',
 		'workbench.experimental.modernUI': true,
+		// The parts are cards with gaps between them (wider than in VS Code, see
+		// `forge.css`), the menu is a button in the activity bar, the terminal and
+		// chat titles show icons instead of labels
+		'window.menuBarVisibility': 'compact',
+		'workbench.panel.showLabels': false,
+		'workbench.secondarySideBar.showLabels': false,
+		// Forge Light and Forge Dark from the `ddo` extension
 		'window.autoDetectColorScheme': true,
+		'workbench.preferredLightColorTheme': 'Forge Light',
+		'workbench.preferredDarkColorTheme': 'Forge Dark',
 		// Copilot CLI sessions and the Codex agent need the Copilot CLI runtime
 		// (Agent Host), see `forge.copilotRuntime`. So does the terminal's first
 		// line hint, which offers to type `copilot`.
@@ -59,6 +72,17 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 	preventExperimentOverride: true,
 	source: 'forgeDefaults'
 }]);
+
+// The integrated browser, one click away in the title bar
+MenuRegistry.appendMenuItem(MenuId.TitleBar, {
+	command: {
+		id: BrowserViewCommandId.Open,
+		title: localize('forge.openBrowser', "Open Integrated Browser"),
+		icon: Codicon.globe,
+	},
+	group: 'navigation',
+	order: 1,
+});
 
 /**
  * Starts every window with the terminal and the primary side bar shown.
