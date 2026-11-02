@@ -4,6 +4,34 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.2.0] - The duck, and an installer
+
+DuckDuckOps now looks like itself: the duck is the app icon, and it answers in the chat as `@duck`. It can also be installed like any Windows app.
+
+| On startup | With a log open |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.2.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, and the empty chat page explaining @duck"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.2.0/desktop-file.png?raw=true" width="420" alt="A log file open below the terminal"> |
+
+### New
+- **`@duck` in the chat** reads the terminal's recent output, as `@ops` did: `/explain`, `/fix`, `/logs`.
+- **`@duck /rubberduck`** talks a problem through with you: the duck asks one question at a time and lets you find the cause. Ask it directly and it answers.
+- **The duck as the app icon**, on the taskbar, the Start menu tile and the title bar.
+- **The empty chat page** says how `@duck` works.
+- **About** (Help menu) shows the DuckDuckOps version, then the VS Code version it is built on.
+- **An installer**, `DuckDuckOps-Terminal-Setup-x64-0.2.0.exe`, next to the zip. It installs DuckDuckOps for your Windows account in `%LOCALAPPDATA%\Programs\DuckDuckOps` without administrator rights, adds it to the Start menu and `ddo` to your PATH, and can add a desktop icon and **Open with DuckDuckOps** to the Explorer menu (both off by default). Uninstall it from **Settings > Apps**.
+
+### Things to know
+- `@ops` is now `@duck`.
+- The terminal no longer suggests typing `copilot`: the Copilot CLI is not part of DuckDuckOps.
+- The chat's empty page no longer offers to generate agent instructions for a codebase.
+- **The installer is not code-signed yet.** Windows SmartScreen may say "Windows protected your PC": choose **More info**, then **Run anyway**. Your company's IT may need to allow it.
+- DuckDuckOps does not update itself. To update, run the new installer: it replaces the old version and keeps your settings.
+- The zip is still there, for machines where you can't run installers.
+
+### After updating
+- Run `DuckDuckOps-Terminal-Setup-x64-0.2.0.exe`. If you used the zip of 0.1.1, delete the folder you extracted afterwards. Settings and extensions in `.ddo` in your user folder are kept.
+- If the taskbar still shows the old icon, unpin DuckDuckOps and pin it again (Windows keeps icons in a cache).
+
 ## [0.1.1] - A terminal with Copilot next to it
 
 The first release of DuckDuckOps Terminal: a workstation for IT/ops that opens on a terminal with GitHub Copilot Chat beside it, built from VS Code with the coding features taken out.

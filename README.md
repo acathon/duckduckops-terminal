@@ -1,3 +1,5 @@
+<p align="center"><img src="resources/brand/duck.png" width="180" alt="The DuckDuckOps duck: a rubber duck with a headset and a navy hoodie"></p>
+
 # DuckDuckOps Terminal
 
 A terminal-first workstation for IT/ops, built on a VS Code (Code - OSS) fork. It opens on a
@@ -86,7 +88,15 @@ node build/ddo/checkServices.ts
 ## Shortcuts
 `Ctrl/Cmd+Alt+` **T** focus terminal · **C** focus chat · **O** open log · **K** clear terminal ·
 **L** toggle tail · **N** terminal with profile · **A** ask chat about selection.
-In chat, `@ops` sees recent terminal output (`/explain`, `/fix`, `/logs`).
+In chat, `@duck` sees recent terminal output (`/explain`, `/fix`, `/logs`). `@duck /rubberduck`
+asks you questions instead of answering, until you find the cause yourself.
+
+## Brand
+
+The duck is [`resources/brand/duck.png`](resources/brand/duck.png). The app icon
+(`resources/win32/code.ico`, the head alone at 32 px and below), the Start tiles, the Linux icon,
+the installer images, the title bar icon and the `@duck` icon are made from it. Inside the app the
+duck stays small: the UI itself is plain, like VS Code's.
 
 ## Build and run
 
