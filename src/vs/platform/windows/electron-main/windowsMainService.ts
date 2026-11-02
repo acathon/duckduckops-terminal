@@ -296,6 +296,12 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	async openAgentsWindow(openConfig: IOpenConfiguration, folderUri?: URI, reveal?: URI | 'new', source?: AgentsWindowOpenSource, folderUriIsDefault = false, draft?: IAgentsWindowDraft, onboardingSessionResource?: URI): Promise<ICodeWindow[]> {
 		this.logService.trace('windowsManager#openAgentsWindow');
 
+		// DuckDuckOps has no Agents window: `--agents` and agent session links
+		// open (or focus) a DuckDuckOps window instead
+		if (product.forge?.enabled) {
+			return this.open({ context: openConfig.context, cli: openConfig.cli, userEnv: openConfig.userEnv, initialStartup: openConfig.initialStartup });
+		}
+
 		const existingWindows = this.getWindows();
 		folderUri = await resolveAgentsWindowFolder(openConfig, folderUri, reveal === 'new' ? undefined : reveal, source, cli => this.doExtractPathsFromCLI(cli));
 
@@ -1596,7 +1602,9 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 
 			cssModules: this.cssDevelopmentService.isEnabled ? await this.cssDevelopmentService.getCssModules() : undefined,
 
-			isSessionsWindow: isWorkspaceIdentifier(options.workspace) && isEqual(options.workspace.configPath, this.environmentMainService.agentSessionsWorkspace),
+			// Not in DuckDuckOps, which has no Agents window (an Agents workspace restored from
+			// an earlier version opens as a DuckDuckOps window)
+			isSessionsWindow: !product.forge?.enabled && isWorkspaceIdentifier(options.workspace) && isEqual(options.workspace.configPath, this.environmentMainService.agentSessionsWorkspace),
 		};
 
 		// New window

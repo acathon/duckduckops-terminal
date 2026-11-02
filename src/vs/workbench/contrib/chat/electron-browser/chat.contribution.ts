@@ -217,14 +217,17 @@ class ChatLifecycleHandler extends Disposable {
 	}
 }
 
-registerAction2(OpenWorkspaceInAgentsWindowAction);
-registerAction2(OpenWorkspaceInAgentsWindowChatTitleAction);
-registerAction2(OpenWorkspaceInAgentsWindowTitleBarAction);
-registerAction2(ToggleOpenInAgentsWindowTitleBarAction);
-registerAction2(OpenAgentsWindowAction);
-registerAction2(OpenChatSessionInAgentsWindowAction);
-if (!product.quality) {
-	registerAction2(ResetCopilotHarnessIntroductionAction);
+// DuckDuckOps has no Agents window (`forge.enabled`)
+if (!product.forge?.enabled) {
+	registerAction2(OpenWorkspaceInAgentsWindowAction);
+	registerAction2(OpenWorkspaceInAgentsWindowChatTitleAction);
+	registerAction2(OpenWorkspaceInAgentsWindowTitleBarAction);
+	registerAction2(ToggleOpenInAgentsWindowTitleBarAction);
+	registerAction2(OpenAgentsWindowAction);
+	registerAction2(OpenChatSessionInAgentsWindowAction);
+	if (!product.quality) {
+		registerAction2(ResetCopilotHarnessIntroductionAction);
+	}
 }
 registerAction2(StartVoiceChatAction);
 
@@ -250,9 +253,11 @@ registerWorkbenchContribution2(NativeBuiltinToolsContribution.ID, NativeBuiltinT
 registerWorkbenchContribution2(ChatCommandLineHandler.ID, ChatCommandLineHandler, WorkbenchPhase.BlockRestore);
 registerWorkbenchContribution2(ChatSuspendThrottlingHandler.ID, ChatSuspendThrottlingHandler, WorkbenchPhase.AfterRestored);
 registerWorkbenchContribution2(ChatLifecycleHandler.ID, ChatLifecycleHandler, WorkbenchPhase.AfterRestored);
-registerWorkbenchContribution2(OpenWorkspaceInAgentsContribution.ID, OpenWorkspaceInAgentsContribution, WorkbenchPhase.BlockRestore);
-registerWorkbenchContribution2(AgentsWindowInvitationContribution.ID, AgentsWindowInvitationContribution, WorkbenchPhase.BlockRestore);
-registerWorkbenchContribution2(CopilotHarnessIntroductionContribution.ID, CopilotHarnessIntroductionContribution, WorkbenchPhase.Eventually);
+if (!product.forge?.enabled) {
+	registerWorkbenchContribution2(OpenWorkspaceInAgentsContribution.ID, OpenWorkspaceInAgentsContribution, WorkbenchPhase.BlockRestore);
+	registerWorkbenchContribution2(AgentsWindowInvitationContribution.ID, AgentsWindowInvitationContribution, WorkbenchPhase.BlockRestore);
+	registerWorkbenchContribution2(CopilotHarnessIntroductionContribution.ID, CopilotHarnessIntroductionContribution, WorkbenchPhase.Eventually);
+}
 
 // How long to wait for the agent host to surface an AgentInfo before
 // throwing an error. Long enough for normal startup, short enough to avoid
