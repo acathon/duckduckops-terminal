@@ -1813,6 +1813,15 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			};
 		}
 
+		// DuckDuckOps: how the duck reads the terminal, text only (no "Generate
+		// Agent Instructions" hint, it is about codebases)
+		if (product.forge?.enabled) {
+			return {
+				title: localize('forgeChatTitle', "Ask the duck"),
+				message: new MarkdownString(localize('forgeChatMessage', "Start with `@duck` to include the terminal's recent output. `@duck /rubberduck` asks you questions until you find the cause yourself.") + '\n\n' + DISCLAIMER),
+			};
+		}
+
 		let title: string;
 		if (this.input.currentModeKind === ChatModeKind.Ask) {
 			title = localize('chatDescription', "Ask about your code");

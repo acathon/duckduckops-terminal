@@ -208,7 +208,7 @@ function activate(context) {
 	reg('ddo.askAboutSelection', async () => {
 		const ed = vscode.window.activeTextEditor;
 		const sel = ed && !ed.selection.isEmpty ? ed.document.getText(ed.selection) : '';
-		const query = sel ? `@ops Explain this:\n\`\`\`\n${sel.slice(0, 6000)}\n\`\`\`` : '@ops /explain';
+		const query = sel ? `@duck Explain this:\n\`\`\`\n${sel.slice(0, 6000)}\n\`\`\`` : '@duck /explain';
 		await vscode.commands.executeCommand('workbench.action.chat.open', { query, isPartialQuery: false });
 	});
 	reg('ddo.installVsixFolder', async () => {
@@ -229,7 +229,7 @@ function activate(context) {
 	reg('ddo.resetLayout', () => applyLayout(context, true));
 
 	// ---- chat participant ----
-	const participant = vscode.chat.createChatParticipant('ddo.ops', async (request, chatCtx, stream, token) => {
+	const participant = vscode.chat.createChatParticipant('ddo.duck', async (request, chatCtx, stream, token) => {
 		const parts = [];
 		const term = recentTerminalOutput();
 		if (term) { parts.push(`Recent terminal output:\n\`\`\`\n${term}\n\`\`\``); }
@@ -245,6 +245,7 @@ function activate(context) {
 			explain: 'Explain what happened in the latest terminal output, root cause first.',
 			fix: 'Diagnose the latest failure and suggest the minimal safe commands to fix it.',
 			logs: 'Analyze the log: summarise errors/warnings, notable patterns, a timeline, and suggested next diagnostic commands.',
+			rubberduck: 'Be a rubber duck. The user talks the problem through and finds the cause themselves. Do not give the cause, the fix or commands. Ask one short question at a time about what they expected, what happened, what changed and what they already ruled out, using the terminal output above. When they ask you directly for the answer, give it.',
 		}[request.command ?? ''] ?? '';
 
 		const messages = [
@@ -262,12 +263,12 @@ function activate(context) {
 			stream.markdown(`\n\n**Model request failed:** ${err instanceof Error ? err.message : String(err)}\n\nMake sure GitHub Copilot is signed in.`);
 			return {};
 		}
-		for (const cmd of extractCommands(full)) {
+		for (const cmd of request.command === 'rubberduck' ? [] : extractCommands(full)) {
 			stream.button({ command: 'ddo.runInTerminal', title: `▶ Run: ${cmd.split('\n')[0].slice(0, 48)}`, arguments: [cmd] });
 		}
 		return {};
 	});
-	participant.iconPath = new vscode.ThemeIcon('terminal');
+	participant.iconPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'duck.png');
 	context.subscriptions.push(participant);
 
 	// ---- startup ----
