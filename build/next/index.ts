@@ -100,10 +100,13 @@ const desktopWorkerEntryPoints = [
 	'vs/platform/profiling/electron-browser/profileAnalysisWorkerMain',
 ];
 
+// DuckDuckOps (`forge.enabled` in product.json) windows only load `vs/forge`:
+// the standard workbench and the Agents window are not built
+const forgeOnly = !!product.forge?.enabled;
+
 // Desktop workbench and code entry points
 const desktopEntryPoints = [
-	'vs/workbench/workbench.desktop.main',
-	'vs/sessions/sessions.desktop.main',
+	...(forgeOnly ? [] : ['vs/workbench/workbench.desktop.main', 'vs/sessions/sessions.desktop.main']),
 	'vs/forge/forge.desktop.main',
 	'vs/workbench/contrib/debug/node/telemetryApp',
 	'vs/platform/files/node/watcher/watcherMain',
@@ -118,7 +121,7 @@ const codeEntryPoints = [
 	'vs/code/node/cliProcessMain',
 	'vs/code/electron-utility/sharedProcess/sharedProcessMain',
 	'vs/code/electron-browser/workbench/workbench',
-	'vs/sessions/electron-browser/sessions',
+	...(forgeOnly ? [] : ['vs/sessions/electron-browser/sessions']),
 ];
 
 // Additional web-only entry points (CDN build only, not in server-web)

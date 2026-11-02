@@ -143,17 +143,23 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 		const out = sourceFolderName;
 		const versionedResourcesFolder = util.getVersionedResourcesFolder(platform, commit!);
 
+		// DuckDuckOps builds neither the standard workbench nor the Agents window, see `build/next/index.ts`
+		const forgeOnly = !!product.forge?.enabled;
 		const checksums = computeChecksums(out, [
 			'vs/base/parts/sandbox/electron-browser/preload.js',
-			'vs/workbench/workbench.desktop.main.js',
-			'vs/workbench/workbench.desktop.main.css',
+			...(forgeOnly ? [] : [
+				'vs/workbench/workbench.desktop.main.js',
+				'vs/workbench/workbench.desktop.main.css',
+			]),
 			'vs/workbench/api/node/extensionHostProcess.js',
 			'vs/code/electron-browser/workbench/workbench.html',
 			'vs/code/electron-browser/workbench/workbench.js',
-			'vs/sessions/sessions.desktop.main.js',
-			'vs/sessions/sessions.desktop.main.css',
-			'vs/sessions/electron-browser/sessions.html',
-			'vs/sessions/electron-browser/sessions.js',
+			...(forgeOnly ? [] : [
+				'vs/sessions/sessions.desktop.main.js',
+				'vs/sessions/sessions.desktop.main.css',
+				'vs/sessions/electron-browser/sessions.html',
+				'vs/sessions/electron-browser/sessions.js',
+			]),
 			'vs/forge/forge.desktop.main.js',
 			'vs/forge/forge.desktop.main.css',
 			'vs/forge/electron-browser/forge.html'
@@ -387,6 +393,9 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 				'!version',
 				...(platform === 'darwin' ? ['!**/Contents/Applications', '!**/Contents/Applications/**'] : []),
 				...(platform === 'win32' ? ['!**/electron_proxy.exe'] : []),
+				// DuckDuckOps: Chromium's own strings (about 55 languages, 45 MB) in English and
+				// French only. The DuckDuckOps UI language comes from language packs, not these.
+				...(forgeOnly && platform !== 'darwin' ? ['!**/locales/*.pak', '**/locales/{en-US,en-GB,fr}.pak'] : []),
 			], { dot: true }));
 
 		if (platform === 'linux') {
@@ -439,18 +448,21 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 				.pipe(rename(product.nameShort + '.VisualElementsManifest.xml')));
 
 			// Setup publishes it next to the copilot.exe shim; see build/win32/copilot.iss.
-			result = es.merge(result, gulp.src('resources/win32/bin/copilot.sh', { base: 'resources/win32' })
-				.pipe(es.through(function (file) {
-					file.contents = Buffer.from(renderCopilotShimLauncher(file.contents.toString('utf8'), {
-						commit: String(commit),
-						quality: String(quality),
-						applicationName: product.applicationName,
-						dataFolderName: product.dataFolderName,
-						serverDataFolderName: product.serverDataFolderName || '.vscode-remote',
-					}));
-					this.emit('data', file);
-				}))
-				.pipe(rename(f => { f.dirname = 'bin/copilot-shim'; f.basename = 'copilot'; f.extname = ''; })));
+			// It launches the Copilot CLI, so it only ships with the Copilot CLI runtime.
+			if (shipsCopilotRuntime) {
+				result = es.merge(result, gulp.src('resources/win32/bin/copilot.sh', { base: 'resources/win32' })
+					.pipe(es.through(function (file) {
+						file.contents = Buffer.from(renderCopilotShimLauncher(file.contents.toString('utf8'), {
+							commit: String(commit),
+							quality: String(quality),
+							applicationName: product.applicationName,
+							dataFolderName: product.dataFolderName,
+							serverDataFolderName: product.serverDataFolderName || '.vscode-remote',
+						}));
+						this.emit('data', file);
+					}))
+					.pipe(rename(f => { f.dirname = 'bin/copilot-shim'; f.basename = 'copilot'; f.extname = ''; })));
+			}
 
 			result = es.merge(result, gulp.src('.build/policies/win32/**', { base: '.build/policies/win32' })
 				.pipe(rename(f => f.dirname = `policies/${f.dirname}`)));

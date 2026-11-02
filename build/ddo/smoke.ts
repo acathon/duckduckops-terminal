@@ -6,7 +6,8 @@
 // Launches a packaged DuckDuckOps build with a fresh profile, checks that the
 // terminal and chat are on screen in the DuckDuckOps layout, opens a file to check
 // that it appears below the terminal, and saves screenshots, the activity bar
-// entries, renderer errors and the logs. Used by the DuckDuckOps build workflow.
+// entries, renderer errors, the logs and the app's size. Used by the DuckDuckOps
+// build workflow.
 //
 //   node build/ddo/smoke.ts <packaged app folder> <output folder>
 
@@ -115,7 +116,12 @@ for (const file of logFiles) {
 	}
 }
 
-const summary = { product: product.nameLong, checks, activityBar, errors, copilotRuntimeLogLines };
+// Size of the packaged app, to see what each change adds or removes
+const sizeOf = (dir: string): number => fs.readdirSync(dir, { withFileTypes: true })
+	.reduce((sum, entry) => sum + (entry.isDirectory() ? sizeOf(path.join(dir, entry.name)) : fs.statSync(path.join(dir, entry.name)).size), 0);
+const sizeMB = Math.round(sizeOf(appDir) / 2 ** 20);
+
+const summary = { product: product.nameLong, sizeMB, checks, activityBar, errors, copilotRuntimeLogLines };
 fs.writeFileSync(path.join(outDir, 'summary.json'), JSON.stringify(summary, undefined, '\t'));
 console.log(JSON.stringify(summary, undefined, '\t'));
 

@@ -456,8 +456,10 @@ function doPackageLocalExtensionsStream(forWeb: boolean, native: boolean): Strea
 	if (forWeb) {
 		result = localExtensionsStream;
 	} else {
-		// also include shared production node modules
-		const productionDependencies = getProductionDependencies('extensions/');
+		// also include shared production node modules (TypeScript, for the TypeScript
+		// language features, which DuckDuckOps doesn't ship)
+		const needsSharedDependencies = !forgeBuiltInExtensions || forgeBuiltInExtensions.includes('typescript-language-features');
+		const productionDependencies = needsSharedDependencies ? getProductionDependencies('extensions/') : [];
 		const dependenciesSrc = productionDependencies.map(d => path.relative(root, d)).map(d => [`${d}/**`, `!${d}/**/{test,tests}/**`]).flat();
 
 		if (dependenciesSrc.length) {
