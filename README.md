@@ -18,8 +18,16 @@ VSIX files. Short name and command: `ddo`.
 
 - The area below the terminal appears when a file, log or web page (also one Copilot opens) is
   opened, as tabs, and disappears when the last one is closed.
-- Parts have rounded corners (the "Modern UI" style). The theme follows the Windows light/dark mode
-  (Light 2026 / Dark 2026).
+- The parts are rounded cards (the "Modern UI" style) on a grey frame, with 8px gaps instead of VS
+  Code's 4px (`FORGE_FLOATING_PANEL_MARGIN` in
+  [`layoutService.ts`](src/vs/workbench/services/layout/browser/layoutService.ts) and
+  [`forge.css`](src/vs/forge/browser/media/forge.css)). The terminal and chat titles show icons
+  instead of labels.
+- The menu is a button at the top of the activity bar (`window.menuBarVisibility`: `compact`). The
+  title bar has a globe button that opens the integrated browser.
+- Themes: Forge Light and Forge Dark (from [`extensions/ddo/themes`](extensions/ddo/themes)) follow
+  the Windows light/dark mode. Light 2026, Dark 2026 and the two High Contrast themes are also there;
+  the other VS Code themes are removed.
 - The side bar on the right is open at startup on Extensions. Switch views (Extensions, Accounts,
   Manage) from the compact activity bar, hide it with `Ctrl+B` or the toggle buttons in the title bar
   (which also toggle the terminal and the chat).

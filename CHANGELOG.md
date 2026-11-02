@@ -4,6 +4,29 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.3.0] - Forge themes and a lighter app
+
+Two themes of its own, more space between the parts, and about 110 MB less to download and install.
+
+| On startup | With a log open |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.3.0/desktop-terminal.png?raw=true" width="420" alt="Forge Light: terminal, chat and Extensions as white cards on a grey frame, the menu as a button"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.3.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal in Forge Light, errors in red and warnings in orange"> |
+
+### New
+- **Forge Light and Forge Dark**, calm themes in the style of JetBrains IDEs: the terminal, the chat and the side bar are white (or dark grey) cards on a grey frame, with blue accents, readable log colours (errors red, warnings orange, dates grey) and matching terminal colours. They follow the Windows light or dark mode.
+- **More space between the parts**: the gaps are twice as wide as in VS Code, so each part reads as its own card.
+- **The integrated browser** has a globe button in the title bar.
+- **The menu is a button** at the top of the activity bar instead of a menu bar, and the terminal and chat titles show icons instead of TERMINAL and CHAT.
+
+### Things to know
+- **Fewer themes.** Forge Light, Forge Dark, Light 2026, Dark 2026 and the two High Contrast themes remain. If you picked Dark+, Light+, Dark Modern, Light Modern or a Visual Studio theme, you get the default theme again.
+- **No Agents window.** "Open in Agents" buttons and commands are gone; it needed the Copilot CLI runtime, which DuckDuckOps does not ship. Copilot Chat next to the terminal works as before, including agent mode.
+- **Smaller app**: Chromium's own strings are in English and French only (menus and dialogs of DuckDuckOps are not affected), and parts DuckDuckOps never loaded are no longer included.
+- To get the menu bar back, set `window.menuBarVisibility` to `classic`. To pick another theme: **Preferences: Color Theme**.
+
+### After updating
+- Your settings override the new defaults: if you changed the menu bar or the theme before, those stay as you set them.
+
 ## [0.2.0] - The duck, and an installer
 
 DuckDuckOps now looks like itself: the duck is the app icon, and it answers in the chat as `@duck`. It can also be installed like any Windows app.
