@@ -15,6 +15,7 @@ import { CustomTitleBarVisibility, TitleBarSetting, getMenuBarVisibility, hasCus
 import { isFullscreen, isWCOEnabled } from '../../../../base/browser/browser.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
+import product from '../../../../platform/product/common/product.js';
 
 export const IWorkbenchLayoutService = refineServiceDecorator<ILayoutService, IWorkbenchLayoutService>(ILayoutService);
 
@@ -101,8 +102,18 @@ export const COMPACT_FLOATING_PANEL_OUTER_MARGIN = 0;
  */
 export const FLOATING_PANEL_INNER_MARGIN = 0;
 
+/**
+ * DuckDuckOps (`forge.enabled` in product.json) leaves wider gaps between the
+ * cards. Keep in sync with the gutter variables in `src/vs/forge/browser/media/forge.css`.
+ */
+export const FORGE_FLOATING_PANEL_MARGIN = 8;
+
+function getDefaultFloatingPanelMargin(): number {
+	return product.forge?.enabled ? FORGE_FLOATING_PANEL_MARGIN : FLOATING_PANEL_MARGIN;
+}
+
 export function getFloatingPanelMargin(layoutService: IWorkbenchLayoutService): number {
-	return layoutService.isModernUICompact() ? COMPACT_FLOATING_PANEL_MARGIN : FLOATING_PANEL_MARGIN;
+	return layoutService.isModernUICompact() ? COMPACT_FLOATING_PANEL_MARGIN : getDefaultFloatingPanelMargin();
 }
 
 /**
@@ -110,7 +121,7 @@ export function getFloatingPanelMargin(layoutService: IWorkbenchLayoutService): 
  * `--modern-ui-floating-card-outer-margin` in `floatingPanels.css`.
  */
 export function getFloatingPanelOuterMargin(layoutService: IWorkbenchLayoutService): number {
-	return layoutService.isModernUICompact() ? COMPACT_FLOATING_PANEL_OUTER_MARGIN : FLOATING_PANEL_MARGIN;
+	return layoutService.isModernUICompact() ? COMPACT_FLOATING_PANEL_OUTER_MARGIN : getDefaultFloatingPanelMargin();
 }
 
 export const enum ActivityBarPosition {

@@ -7,3 +7,11 @@
 .monaco-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon.window-appicon:not(.codicon) {
 	background-image: url('./duck-head.png');
 }
+
+/* Wider gaps between the parts (8px instead of 4px), so they read as separate
+ * cards on the frame. Keep in sync with `FORGE_FLOATING_PANEL_MARGIN` in
+ * `src/vs/workbench/services/layout/browser/layoutService.ts`. */
+.monaco-workbench.floating-panels:not(.modern-ui-compact) {
+	--modern-ui-floating-card-margin: 8px;
+	--modern-ui-floating-card-outer-margin: 8px;
+}
