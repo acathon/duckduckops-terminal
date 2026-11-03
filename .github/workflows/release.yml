@@ -129,18 +129,28 @@ jobs:
           exec { npm run gulp vscode-win32-x64-inno-updater }
           exec { npm run gulp vscode-win32-x64-user-setup }
           Copy-Item .build\win32-x64\user-setup\DuckDuckOpsSetup.exe .build\DuckDuckOps-Terminal-Setup-x64-${{ steps.meta.outputs.version }}.exe
+          # For IT: installs into Program Files for all users (administrator rights), and
+          # can be deployed silently, see docs/it-deployment.md
+          exec { npm run gulp vscode-win32-x64-system-setup }
+          Copy-Item .build\win32-x64\system-setup\DuckDuckOpsSetup.exe .build\DuckDuckOps-Terminal-SystemSetup-x64-${{ steps.meta.outputs.version }}.exe
 
       - name: Install, check and uninstall
         shell: pwsh
         run: |
-          $dir = Join-Path $env:RUNNER_TEMP 'ddo-install'
-          $setup = Start-Process .build\DuckDuckOps-Terminal-Setup-x64-${{ steps.meta.outputs.version }}.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$dir", '/MERGETASKS=!runcode' -Wait -PassThru
-          if ($setup.ExitCode -ne 0) { throw "Setup exited with code $($setup.ExitCode)" }
-          foreach ($file in 'DuckDuckOps.exe', 'bin\ddo.cmd', 'resources\app\product.json', 'unins000.exe') {
-            if (-not (Test-Path (Join-Path $dir $file))) { throw "Not installed: $file" }
+          foreach ($kind in 'Setup', 'SystemSetup') {
+            $dir = Join-Path $env:RUNNER_TEMP "ddo-$kind"
+            $setup = Start-Process ".build\DuckDuckOps-Terminal-$kind-x64-${{ steps.meta.outputs.version }}.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$dir", '/MERGETASKS=!runcode' -Wait -PassThru
+            if ($setup.ExitCode -ne 0) { throw "$kind exited with code $($setup.ExitCode)" }
+            foreach ($file in 'DuckDuckOps.exe', 'bin\ddo.cmd', 'resources\app\product.json', 'unins000.exe') {
+              if (-not (Test-Path (Join-Path $dir $file))) { throw "$kind did not install $file" }
+            }
+            $uninstall = Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+            if ($uninstall.ExitCode -ne 0) { throw "Uninstalling $kind exited with code $($uninstall.ExitCode)" }
+            # The uninstaller hands over to a copy of itself and returns at once
+            for ($i = 0; $i -lt 60 -and (Test-Path (Join-Path $dir 'DuckDuckOps.exe')); $i++) { Start-Sleep -Seconds 2 }
+            if (Test-Path (Join-Path $dir 'DuckDuckOps.exe')) { throw "Uninstalling $kind left DuckDuckOps.exe behind" }
+            Write-Host "$kind installs and uninstalls"
           }
-          $uninstall = Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
-          if ($uninstall.ExitCode -ne 0) { throw "Uninstall exited with code $($uninstall.ExitCode)" }
 
       - name: Upload the app
         if: ${{ !cancelled() }}
@@ -150,6 +160,7 @@ jobs:
           path: |
             .build/DuckDuckOps-Terminal-win32-x64-${{ steps.meta.outputs.version }}.zip
             .build/DuckDuckOps-Terminal-Setup-x64-${{ steps.meta.outputs.version }}.exe
+            .build/DuckDuckOps-Terminal-SystemSetup-x64-${{ steps.meta.outputs.version }}.exe
           if-no-files-found: ignore
 
       - name: Upload screenshots and logs
@@ -207,18 +218,25 @@ jobs:
             done
             echo
             echo "---"
-            if [ -f "DuckDuckOps-Terminal-Setup-x64-$1.exe" ] || gh release view "ddo-$1" --json assets --jq '.assets[].name' 2>/dev/null | grep -q Setup; then
+            local assets
+            assets="$(ls 2>/dev/null; gh release view "ddo-$1" --json assets --jq '.assets[].name' 2>/dev/null)"
+            if grep -q "Setup-x64-$1.exe" <<<"$assets"; then
               echo "Install: run \`DuckDuckOps-Terminal-Setup-x64-$1.exe\` from the assets (no administrator rights needed), or extract \`DuckDuckOps-Terminal-win32-x64-$1.zip\` and run \`DuckDuckOps.exe\`."
             else
               echo "Install: download \`DuckDuckOps-Terminal-win32-x64-$1.zip\` from the assets, extract it and run \`DuckDuckOps.exe\`."
+            fi
+            if grep -q "SystemSetup-x64-$1.exe" <<<"$assets"; then
+              echo "For IT: \`DuckDuckOps-Terminal-SystemSetup-x64-$1.exe\` installs for all users in Program Files and can be deployed silently; \`SHA256SUMS.txt\` has the file hashes. See [IT deployment](https://github.com/$GITHUB_REPOSITORY/blob/main/docs/it-deployment.md)."
             fi
             echo "Every change in every version: [CHANGELOG.md](https://github.com/$GITHUB_REPOSITORY/blob/main/CHANGELOG.md)."
           }
 
           # Publish this version if it has no release yet
           if ! released "$VERSION"; then
+            files=(DuckDuckOps-Terminal-*-"$VERSION".*)
+            sha256sum "${files[@]}" > SHA256SUMS.txt
             body "$VERSION" > release-body.md
-            gh release create "ddo-$VERSION" "DuckDuckOps-Terminal-Setup-x64-$VERSION.exe" "DuckDuckOps-Terminal-win32-x64-$VERSION.zip" \
+            gh release create "ddo-$VERSION" "${files[@]}" SHA256SUMS.txt \
               --target "$GITHUB_SHA" \
               --title "ddo-$VERSION" \
               --notes-file release-body.md
