@@ -186,8 +186,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.windows.outputs.version }}
         run: |
+          versions=($(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | tr -d '#[] '))
+          released() { gh release view "ddo-$1" >/dev/null 2>&1; }
+
+          # The notes of a release: its CHANGELOG.md section, then the sections of the older
+          # versions that were merged to main together with it and have no release of their own
           body() {
             node build/ddo/releaseNotes.ts "$1"
+            local found=
+            for w in "${versions[@]}"; do
+              if [ -n "$found" ]; then
+                released "$w" && break
+                echo
+                echo "## Also in this release, from $w"
+                echo
+                node build/ddo/releaseNotes.ts "$w"
+              elif [ "$w" = "$1" ]; then
+                found=1
+              fi
+            done
             echo
             echo "---"
             if [ -f "DuckDuckOps-Terminal-Setup-x64-$1.exe" ] || gh release view "ddo-$1" --json assets --jq '.assets[].name' 2>/dev/null | grep -q Setup; then
@@ -199,7 +216,7 @@ jobs:
           }
 
           # Publish this version if it has no release yet
-          if ! gh release view "ddo-$VERSION" >/dev/null 2>&1; then
+          if ! released "$VERSION"; then
             body "$VERSION" > release-body.md
             gh release create "ddo-$VERSION" "DuckDuckOps-Terminal-Setup-x64-$VERSION.exe" "DuckDuckOps-Terminal-win32-x64-$VERSION.zip" \
               --target "$GITHUB_SHA" \
@@ -207,10 +224,10 @@ jobs:
               --notes-file release-body.md
           fi
 
-          # Keep the notes of every released version equal to its CHANGELOG.md section
+          # Keep the notes of every released version equal to its CHANGELOG.md section(s)
           # (this also fixes releases that were published with generic notes)
-          for v in $(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | tr -d '#[] '); do
-            if gh release view "ddo-$v" >/dev/null 2>&1; then
+          for v in "${versions[@]}"; do
+            if released "$v"; then
               body "$v" > release-body.md
               gh release edit "ddo-$v" --title "ddo-$v" --notes-file release-body.md
             fi

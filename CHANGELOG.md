@@ -8,6 +8,10 @@ For each release, take screenshots of the build (`node build/ddo/smoke.ts <app f
 
 Three Copilot agents that work together on an ops task, each on its own model, sharing your terminal.
 
+| On startup | With a log open |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-terminal.png?raw=true" width="420" alt="Forge Light: terminal, chat and Extensions as white cards on a grey frame, the menu as a button"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal in Forge Light, errors in red and warnings in orange"> |
+
 ### New
 - **Duck Lead, Duck Operator and Duck Reviewer**, in the chat's agent list. The Lead plans and hands each step to the Operator, which runs it in the terminal; before anything that changes the system, the Reviewer checks it. Buttons under an answer pass the work from one to another by hand.
 - **Each agent has its own model.** The first time Copilot is signed in, DuckDuckOps picks one per agent from the models your Copilot plan offers (for example Opus for the Lead, Sonnet for the Operator, GPT for the Reviewer) and tells you which. Change them, or leave an agent out, with **DuckDuckOps: Set Up Agents**.
@@ -26,10 +30,6 @@ Three Copilot agents that work together on an ops task, each on its own model, s
 ## [0.3.0] - Forge themes and a lighter app
 
 Two themes of its own, more space between the parts, and about 110 MB less to download and install.
-
-| On startup | With a log open |
-|---|---|
-| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.3.0/desktop-terminal.png?raw=true" width="420" alt="Forge Light: terminal, chat and Extensions as white cards on a grey frame, the menu as a button"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.3.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal in Forge Light, errors in red and warnings in orange"> |
 
 ### New
 - **Forge Light and Forge Dark**, calm themes in the style of JetBrains IDEs: the terminal, the chat and the side bar are white (or dark grey) cards on a grey frame, with blue accents, readable log colours (errors red, warnings orange, dates grey) and matching terminal colours. They follow the Windows light or dark mode.
@@ -50,17 +50,13 @@ Two themes of its own, more space between the parts, and about 110 MB less to do
 
 DuckDuckOps now looks like itself: the duck is the app icon, and it answers in the chat as `@duck`. It can also be installed like any Windows app.
 
-| On startup | With a log open |
-|---|---|
-| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.2.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, and the empty chat page explaining @duck"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.2.0/desktop-file.png?raw=true" width="420" alt="A log file open below the terminal"> |
-
 ### New
 - **`@duck` in the chat** reads the terminal's recent output, as `@ops` did: `/explain`, `/fix`, `/logs`.
 - **`@duck /rubberduck`** talks a problem through with you: the duck asks one question at a time and lets you find the cause. Ask it directly and it answers.
 - **The duck as the app icon**, on the taskbar, the Start menu tile and the title bar.
 - **The empty chat page** says how `@duck` works.
 - **About** (Help menu) shows the DuckDuckOps version, then the VS Code version it is built on.
-- **An installer**, `DuckDuckOps-Terminal-Setup-x64-0.2.0.exe`, next to the zip. It installs DuckDuckOps for your Windows account in `%LOCALAPPDATA%\Programs\DuckDuckOps` without administrator rights, adds it to the Start menu and `ddo` to your PATH, and can add a desktop icon and **Open with DuckDuckOps** to the Explorer menu (both off by default). Uninstall it from **Settings > Apps**.
+- **An installer**, `DuckDuckOps-Terminal-Setup-x64-<version>.exe`, next to the zip. It installs DuckDuckOps for your Windows account in `%LOCALAPPDATA%\Programs\DuckDuckOps` without administrator rights, adds it to the Start menu and `ddo` to your PATH, and can add a desktop icon and **Open with DuckDuckOps** to the Explorer menu (both off by default). Uninstall it from **Settings > Apps**.
 
 ### Things to know
 - `@ops` is now `@duck`.
@@ -71,7 +67,7 @@ DuckDuckOps now looks like itself: the duck is the app icon, and it answers in t
 - The zip is still there, for machines where you can't run installers.
 
 ### After updating
-- Run `DuckDuckOps-Terminal-Setup-x64-0.2.0.exe`. If you used the zip of 0.1.1, delete the folder you extracted afterwards. Settings and extensions in `.ddo` in your user folder are kept.
+- Run the installer. If you used the zip of 0.1.1, delete the folder you extracted afterwards. Settings and extensions in `.ddo` in your user folder are kept.
 - If the taskbar still shows the old icon, unpin DuckDuckOps and pin it again (Windows keeps icons in a cache).
 
 ## [0.1.1] - A terminal with Copilot next to it

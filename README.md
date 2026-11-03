@@ -173,7 +173,8 @@ as build artifacts, so a branch can be tried before it is merged.
   `docs/screenshots/<version>/`. The build fails without the section.
 - Merging to `main` releases the version if it has no release yet: GitHub Release `ddo-<version>`
   with `DuckDuckOps-Terminal-Setup-x64-<version>.exe`, `DuckDuckOps-Terminal-win32-x64-<version>.zip`
-  and the changelog section as its notes.
+  and the changelog section as its notes. Merging several versions at once releases the newest; its
+  notes also carry the sections of the versions merged with it.
   Every merge also refreshes the notes of the released versions from the changelog.
 
 ```bash
