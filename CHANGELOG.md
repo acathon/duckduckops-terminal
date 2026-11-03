@@ -4,6 +4,25 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.4.0] - Duck agents
+
+Three Copilot agents that work together on an ops task, each on its own model, sharing your terminal.
+
+### New
+- **Duck Lead, Duck Operator and Duck Reviewer**, in the chat's agent list. The Lead plans and hands each step to the Operator, which runs it in the terminal; before anything that changes the system, the Reviewer checks it. Buttons under an answer pass the work from one to another by hand.
+- **Each agent has its own model.** The first time Copilot is signed in, DuckDuckOps picks one per agent from the models your Copilot plan offers (for example Opus for the Lead, Sonnet for the Operator, GPT for the Reviewer) and tells you which. Change them, or leave an agent out, with **DuckDuckOps: Set Up Agents**.
+- **The terminal is shared.** The agents read what you ran before they start, and the commands they run show in the terminal, not only in the chat.
+- **Safer commands.** Diagnostics such as `systemctl status`, `journalctl`, `kubectl get`, `ipconfig /all` or `Test-NetConnection` run without asking. Restarting or stopping services, rebooting, `kubectl delete`, `terraform apply`, `helm upgrade` and `docker rm` always ask first, whatever else you allowed.
+- **Fewer tokens.** Each agent gets only the tools its job needs, and an agent that fails twice the same way stops and asks the Reviewer instead of trying again (ideas from Microsoft's TokenEconomizer).
+
+### Things to know
+- Every agent turn uses a Copilot request, and premium models such as Opus count more. With three agents on one task, keep an eye on your Copilot usage.
+- Which models you can pick depends on your company's Copilot plan and policies.
+- The agents live in `.ddo\agents` in your user folder as `.agent.md` files. You can read and edit them; **Set Up Agents** writes them again.
+
+### After updating
+- Sign in to GitHub Copilot if you haven't. A message tells you when the agents are ready; pick **Duck Lead** in the chat to start.
+
 ## [0.3.0] - Forge themes and a lighter app
 
 Two themes of its own, more space between the parts, and about 110 MB less to download and install.

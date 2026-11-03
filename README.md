@@ -106,6 +106,29 @@ node build/ddo/checkServices.ts
 In chat, `@duck` sees recent terminal output (`/explain`, `/fix`, `/logs`). `@duck /rubberduck`
 asks you questions instead of answering, until you find the cause yourself.
 
+## Duck agents
+
+Three Copilot custom agents work on an ops task together, each on its own model:
+
+| Agent | Does | Tools |
+|---|---|---|
+| Duck Lead | plans, hands steps to the others (`runSubagent`), sums up | agents, read the terminal and files |
+| Duck Operator | runs commands in the terminal, one at a time | run in terminal, read the terminal and files |
+| Duck Reviewer | checks plans and commands, never runs anything | read the terminal and files |
+
+- The [`ddo` extension](extensions/ddo/agents.js) writes them as `.agent.md` files to `~/.ddo/agents`
+  (added to `chat.agentFilesLocations`) the first time Copilot models are available, with a suggested
+  model each. **DuckDuckOps: Set Up Agents** changes the models or leaves agents out.
+- The terminal is shared: the agents read it first, and `chat.tools.terminal.outputLocation` is
+  `terminal`, so the commands they run show there.
+- `chat.tools.terminal.autoApprove` gets ops rules on top of Copilot's own
+  ([`forge.contribution.ts`](src/vs/forge/browser/forge.contribution.ts)): read-only diagnostics run
+  without asking, changes to services, machines and clusters always ask.
+- To use fewer tokens, each agent has only the tools it needs, and an agent that fails twice the same
+  way stops and asks the Reviewer. Both ideas come from
+  [TokenEconomizer](https://github.com/microsoft/TokenEconomizer) (Microsoft Research, Apache-2.0),
+  which itself is a plugin for agent CLIs and does not run inside Copilot Chat.
+
 ## Brand
 
 The duck is [`resources/brand/duck.png`](resources/brand/duck.png). The app icon
