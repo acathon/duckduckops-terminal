@@ -59,6 +59,37 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'window.autoDetectColorScheme': true,
 		'workbench.preferredLightColorTheme': 'Forge Light',
 		'workbench.preferredDarkColorTheme': 'Forge Dark',
+		// The Duck agents (Lead, Operator, Reviewer) that the `ddo` extension writes
+		// on first start, next to the usual agent folders
+		'chat.agentFilesLocations': {
+			'.github/agents': true,
+			'.claude/agents': true,
+			'~/.copilot/agents': true,
+			'~/.ddo/agents': true,
+		},
+		// The terminal is shared: commands that the chat runs show in the terminal,
+		// not only in the chat
+		'chat.tools.terminal.outputLocation': 'terminal',
+		// Added to Copilot's own rules (object defaults merge): ops diagnostics run
+		// without asking, changes to services, machines and clusters always ask
+		'chat.tools.terminal.autoApprove': {
+			'/^(uptime|hostname|whoami|id|date|uname|free|lsblk|ps|ss|netstat|nslookup|dig|host|systeminfo|tasklist)\\b/': true,
+			'/^ip\\s+(a|addr|address|r|route|link)(\\s+(show|list))?\\s*$/': true,
+			'/^ipconfig(\\s+\\/all)?\\s*$/i': true,
+			'/^ping\\s+(-c|-n)\\s+\\d+\\s+\\S+$/': true,
+			'/^(systemctl|service)\\s+(status|is-active|is-enabled|list-units|list-unit-files)\\b/': true,
+			'/^journalctl\\b(?!.*--(vacuum|rotate|flush))/': true,
+			'/^kubectl\\s+(get|describe|logs|top|version|explain|api-resources|cluster-info)\\b/': true,
+			'/^kubectl\\s+config\\s+(view|get-contexts|current-context)\\b/': true,
+			'/^(Test-NetConnection|Resolve-DnsName|Get-NetIPAddress|Get-NetAdapter)\\b/i': true,
+			'/^(shutdown|reboot|halt|poweroff|Restart-Computer|Stop-Computer|format|mkfs\\S*|dd)\\b/i': false,
+			'/^(systemctl|service)\\s+(stop|restart|disable|mask|kill)\\b/': false,
+			'/^(Stop-Service|Restart-Service|Set-Service|Stop-Process)\\b/i': false,
+			'/^kubectl\\s+(delete|drain|cordon|scale|rollout|apply|edit|patch|replace)\\b/': false,
+			'/^(terraform|tofu)\\s+(apply|destroy|import|state)\\b/': false,
+			'/^helm\\s+(install|upgrade|uninstall|rollback)\\b/': false,
+			'/^docker\\s+(rm|rmi|kill|stop|restart|system\\s+prune|volume\\s+rm|network\\s+rm)\\b/': false,
+		},
 		// Copilot CLI sessions and the Codex agent need the Copilot CLI runtime
 		// (Agent Host), see `forge.copilotRuntime`. So does the terminal's first
 		// line hint, which offers to type `copilot`.
