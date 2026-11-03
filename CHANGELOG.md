@@ -4,6 +4,23 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.4.1] - Ready for managed devices
+
+On work laptops with application control, the installer of 0.4.0 can be "blocked by your system administrator". This release gives IT what it needs to deploy DuckDuckOps.
+
+### New
+- **An all-users installer**, `DuckDuckOps-Terminal-SystemSetup-x64-0.4.1.exe`. It installs into Program Files, which application control usually allows, and IT can deploy it silently (Intune, SCCM).
+- **`SHA256SUMS.txt`** in every release, with the hash of each file.
+- **[Deployment notes for IT](https://github.com/acathon/duckduckops-terminal/blob/main/docs/it-deployment.md)**: silent install and uninstall, detection rule, what DuckDuckOps connects to and where it keeps its data.
+
+### Things to know
+- On a managed laptop, ask your IT to deploy the all-users installer. Send them the link to the deployment notes.
+- The files are still not code-signed. Until they are, IT allows DuckDuckOps by its install folder or by file hash.
+- Nothing changes in the app itself.
+
+### After updating
+- If 0.4.0 installed fine for you, nothing to do. The per-user installer is still there.
+
 ## [0.4.0] - Duck agents
 
 Three Copilot agents that work together on an ops task, each on its own model, sharing your terminal.
