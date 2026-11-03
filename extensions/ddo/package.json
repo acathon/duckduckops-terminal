@@ -2,7 +2,7 @@
   "name": "ddo",
   "displayName": "DuckDuckOps",
   "description": "Terminal-first workstation: terminal with files below it, AI chat on the right.",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "publisher": "ddo",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -86,6 +86,11 @@
       {
         "command": "ddo.resetLayout",
         "title": "Reset Layout (Terminal + Chat Right)",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.setupAgents",
+        "title": "Set Up Agents",
         "category": "DuckDuckOps"
       }
     ],

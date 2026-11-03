@@ -3,6 +3,7 @@
 const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
+const agents = require('./agents');
 
 const cfg = () => vscode.workspace.getConfiguration('ddo');
 const LOG_RE = /\.(log|txt|out|err)(\.\d+)?$/i;
@@ -227,6 +228,7 @@ function activate(context) {
 		vscode.window.showInformationMessage(`Installed ${files.length} VSIX file(s) from ${dir}.`);
 	});
 	reg('ddo.resetLayout', () => applyLayout(context, true));
+	reg('ddo.setupAgents', () => agents.setUpAgents());
 
 	// ---- chat participant ----
 	const participant = vscode.chat.createChatParticipant('ddo.duck', async (request, chatCtx, stream, token) => {
@@ -274,6 +276,7 @@ function activate(context) {
 	// ---- startup ----
 	updateStatus();
 	applyLayout(context, false).then(undefined, () => { });
+	agents.setUpOnFirstRun(context);
 }
 
 function deactivate() { }
