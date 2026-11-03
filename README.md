@@ -149,16 +149,18 @@ npm run watch            # or: npm run compile
 
 npm run gulp vscode-win32-x64-min    # packaged app in ../VSCode-win32-x64 (also -darwin-arm64, -linux-x64)
 npm run gulp vscode-win32-x64-inno-updater
-npm run gulp vscode-win32-x64-user-setup   # installer in .build/win32-x64/user-setup/DuckDuckOpsSetup.exe
+npm run gulp vscode-win32-x64-user-setup     # per-user installer in .build/win32-x64/user-setup/
+npm run gulp vscode-win32-x64-system-setup   # all-users installer in .build/win32-x64/system-setup/
 ```
 
-The installer ([`build/win32/code.iss`](build/win32/code.iss), Inno Setup from `node_modules`) installs
-for the current Windows account without administrator rights, shows `forge.version` as its version
-and uses the duck images in `resources/win32`.
+The installers ([`build/win32/code.iss`](build/win32/code.iss), Inno Setup from `node_modules`) show
+`forge.version` as their version and use the duck images in `resources/win32`. The per-user one needs
+no administrator rights; the all-users one installs into Program Files and is the one for managed
+devices, see [IT deployment](docs/it-deployment.md).
 
 **Without local build tools:** [`.github/workflows/release.yml`](.github/workflows/release.yml)
-builds the Windows app on GitHub on every branch push and pull request. It keeps the installer (after
-installing and uninstalling it once), the app as a zip and `ddo-smoke` (screenshots after first launch and after opening a file, layout checks, the
+builds the Windows app on GitHub on every branch push and pull request. It keeps both installers (after
+installing and uninstalling each once), the app as a zip and `ddo-smoke` (screenshots after first launch and after opening a file, layout checks, the
 activity bar entries, renderer errors and logs, from [`build/ddo/smoke.ts`](build/ddo/smoke.ts))
 as build artifacts, so a branch can be tried before it is merged.
 
@@ -172,8 +174,8 @@ as build artifacts, so a branch can be tried before it is merged.
 - Every version has a section in [`CHANGELOG.md`](CHANGELOG.md) with screenshots in
   `docs/screenshots/<version>/`. The build fails without the section.
 - Merging to `main` releases the version if it has no release yet: GitHub Release `ddo-<version>`
-  with `DuckDuckOps-Terminal-Setup-x64-<version>.exe`, `DuckDuckOps-Terminal-win32-x64-<version>.zip`
-  and the changelog section as its notes. Merging several versions at once releases the newest; its
+  with `DuckDuckOps-Terminal-Setup-x64-<version>.exe`, `DuckDuckOps-Terminal-SystemSetup-x64-<version>.exe`,
+  `DuckDuckOps-Terminal-win32-x64-<version>.zip`, `SHA256SUMS.txt` and the changelog section as its notes. Merging several versions at once releases the newest; its
   notes also carry the sections of the versions merged with it.
   Every merge also refreshes the notes of the released versions from the changelog.
 
