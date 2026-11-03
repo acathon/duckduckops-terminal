@@ -41,6 +41,7 @@ import { IWorkbenchEnvironmentService } from '../../../services/environment/comm
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { SwitchCompositeViewAction } from '../compositeBarActions.js';
 import { IHostService } from '../../../services/host/browser/host.js';
+import product from '../../../../platform/product/common/product.js';
 
 export class ActivitybarPart extends Part {
 
@@ -166,11 +167,13 @@ export class ActivitybarPart extends Part {
 	 * follows the editor — on the right, with no side bar to connect to — reserves one more
 	 * margin than it does when it leads. Compact density keeps its cards joined, so it never
 	 * needs the gap. Mirrors `.nosidebar .part.activitybar.right` in `floatingPanels.css`.
+	 * DuckDuckOps (`forge.enabled`) keeps the side bar a card of its own, apart from the
+	 * rail, so its rail always has the gap (`src/vs/forge/browser/media/forge.css`).
 	 */
 	private get needsFloatingLeadingGap(): boolean {
 		return !this.layoutService.isModernUICompact()
 			&& this.layoutService.getSideBarPosition() === Position.RIGHT
-			&& !this.layoutService.isVisible(Parts.SIDEBAR_PART);
+			&& (!!product.forge?.enabled || !this.layoutService.isVisible(Parts.SIDEBAR_PART));
 	}
 
 	private readonly compositeBar = this._register(new MutableDisposable<PaneCompositeBar>());

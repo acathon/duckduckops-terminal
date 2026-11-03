@@ -15,3 +15,17 @@
 	--modern-ui-floating-card-margin: 8px;
 	--modern-ui-floating-card-outer-margin: 8px;
 }
+
+/* The side bar is a card of its own, rounded on every corner, and the activity bar
+ * is icons on the frame beside it, with the usual gap between them (VS Code joins
+ * them into one surface). The rail's gap is reserved in code, see
+ * `ActivitybarPart.needsFloatingLeadingGap`. */
+.monaco-workbench.floating-panels:not(.modern-ui-compact):not(.noactivitybar) .part.sidebar.right {
+	--modern-ui-floating-card-seam-right-color: var(--modern-ui-floating-card-edge-color);
+	border-top-right-radius: var(--vscode-cornerRadius-large);
+	border-bottom-right-radius: var(--vscode-cornerRadius-large);
+}
+
+.monaco-workbench.floating-panels:not(.modern-ui-compact) .part.activitybar.right {
+	margin-left: var(--modern-ui-floating-card-margin);
+}
