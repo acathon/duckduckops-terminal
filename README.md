@@ -100,11 +100,17 @@ npm run watch            # or: npm run compile
 ./scripts/code.sh        # Windows: .\scripts\code.bat
 
 npm run gulp vscode-win32-x64-min    # packaged app in ../VSCode-win32-x64 (also -darwin-arm64, -linux-x64)
+npm run gulp vscode-win32-x64-inno-updater
+npm run gulp vscode-win32-x64-user-setup   # installer in .build/win32-x64/user-setup/DuckDuckOpsSetup.exe
 ```
 
+The installer ([`build/win32/code.iss`](build/win32/code.iss), Inno Setup from `node_modules`) installs
+for the current Windows account without administrator rights, shows `forge.version` as its version
+and uses the duck images in `resources/win32`.
+
 **Without local build tools:** [`.github/workflows/release.yml`](.github/workflows/release.yml)
-builds the Windows app on GitHub on every branch push and pull request. It keeps the app as a zip
-and `ddo-smoke` (screenshots after first launch and after opening a file, layout checks, the
+builds the Windows app on GitHub on every branch push and pull request. It keeps the installer (after
+installing and uninstalling it once), the app as a zip and `ddo-smoke` (screenshots after first launch and after opening a file, layout checks, the
 activity bar entries, renderer errors and logs, from [`build/ddo/smoke.ts`](build/ddo/smoke.ts))
 as build artifacts, so a branch can be tried before it is merged.
 
@@ -118,7 +124,8 @@ as build artifacts, so a branch can be tried before it is merged.
 - Every version has a section in [`CHANGELOG.md`](CHANGELOG.md) with screenshots in
   `docs/screenshots/<version>/`. The build fails without the section.
 - Merging to `main` releases the version if it has no release yet: GitHub Release `ddo-<version>`
-  with `DuckDuckOps-Terminal-win32-x64-<version>.zip` and the changelog section as its notes.
+  with `DuckDuckOps-Terminal-Setup-x64-<version>.exe`, `DuckDuckOps-Terminal-win32-x64-<version>.zip`
+  and the changelog section as its notes.
   Every merge also refreshes the notes of the released versions from the changelog.
 
 ```bash
