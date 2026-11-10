@@ -75,6 +75,10 @@ try {
 	checks['no file area while nothing is open'] = workbenchClasses.includes('nomaineditorarea');
 	checks['rounded parts'] = workbenchClasses.includes('modern-ui');
 	checks['duck on the chat page'] = await window.$eval('.part.auxiliarybar .chat-welcome-view-title', title => title.textContent === 'Ask the duck').catch(() => false);
+	// The folder panel, right of the terminal in the terminal's panel, listing its folder
+	const [terminalBox, folderBox] = await Promise.all([box('.part.panel .terminal-wrapper'), box('.part.panel .forge-folder')]);
+	checks['folder panel right of the terminal'] = !!terminalBox && !!folderBox && folderBox.x >= terminalBox.x + terminalBox.width - 1;
+	checks['folder panel lists files'] = await window.waitForSelector('.part.panel .forge-folder .forge-folder-row', { state: 'visible', timeout: 15_000 }).then(() => true, () => false);
 
 	// An opened file (a log, through quick open) appears below the terminal
 	const logFile = path.join(profileDir, 'service.log');

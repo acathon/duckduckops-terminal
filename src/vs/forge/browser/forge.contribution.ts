@@ -6,6 +6,7 @@
 import './media/forge.css';
 import './media/forgeIcons.css';
 import './forgeDuo.js';
+import './forgeFolder.js';
 import { mainWindow } from '../../base/browser/window.js';
 import { Codicon } from '../../base/common/codicons.js';
 import { Disposable } from '../../base/common/lifecycle.js';
