@@ -196,57 +196,33 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.windows.outputs.version }}
+        run: bash build/ddo/release.sh
+
+  # The release job only runs on main. Branch builds and pull requests run its script
+  # with a stand-in `gh` (no release exists, nothing is published), so a broken
+  # script shows up before the merge.
+  release-check:
+    name: Check the release script
+    if: ${{ github.ref != 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Run the release script with a stand-in gh
         run: |
-          versions=($(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | tr -d '#[] '))
-          released() { gh release view "ddo-$1" >/dev/null 2>&1; }
-
-          # The notes of a release: its CHANGELOG.md section, then the sections of the older
-          # versions that were merged to main together with it and have no release of their own
-          body() {
-            node build/ddo/releaseNotes.ts "$1"
-            local found=
-            for w in "${versions[@]}"; do
-              if [ -n "$found" ]; then
-                released "$w" && break
-                echo
-                echo "## Also in this release, from $w"
-                echo
-                node build/ddo/releaseNotes.ts "$w"
-              elif [ "$w" = "$1" ]; then
-                found=1
-              fi
-            done
-            echo
-            echo "---"
-            local assets
-            assets="$(ls 2>/dev/null; gh release view "ddo-$1" --json assets --jq '.assets[].name' 2>/dev/null)"
-            if grep -q "Setup-x64-$1.exe" <<<"$assets"; then
-              echo "Install: run \`DuckDuckOps-Terminal-Setup-x64-$1.exe\` from the assets (no administrator rights needed), or extract \`DuckDuckOps-Terminal-win32-x64-$1.zip\` and run \`DuckDuckOps.exe\`."
-            else
-              echo "Install: download \`DuckDuckOps-Terminal-win32-x64-$1.zip\` from the assets, extract it and run \`DuckDuckOps.exe\`."
-            fi
-            if grep -q "SystemSetup-x64-$1.exe" <<<"$assets"; then
-              echo "For IT: \`DuckDuckOps-Terminal-SystemSetup-x64-$1.exe\` installs for all users in Program Files and can be deployed silently; \`SHA256SUMS.txt\` has the file hashes. See [IT deployment](https://github.com/$GITHUB_REPOSITORY/blob/main/docs/it-deployment.md)."
-            fi
-            echo "Every change in every version: [CHANGELOG.md](https://github.com/$GITHUB_REPOSITORY/blob/main/CHANGELOG.md)."
-          }
-
-          # Publish this version if it has no release yet
-          if ! released "$VERSION"; then
-            files=(DuckDuckOps-Terminal-*-"$VERSION".*)
-            sha256sum "${files[@]}" > SHA256SUMS.txt
-            body "$VERSION" > release-body.md
-            gh release create "ddo-$VERSION" "${files[@]}" SHA256SUMS.txt \
-              --target "$GITHUB_SHA" \
-              --title "ddo-$VERSION" \
-              --notes-file release-body.md
-          fi
-
-          # Keep the notes of every released version equal to its CHANGELOG.md section(s)
-          # (this also fixes releases that were published with generic notes)
-          for v in "${versions[@]}"; do
-            if released "$v"; then
-              body "$v" > release-body.md
-              gh release edit "ddo-$v" --title "ddo-$v" --notes-file release-body.md
-            fi
-          done
+          version="$(node -p "require('./product.json').forge.version")"
+          stub="$RUNNER_TEMP/gh-stub"
+          mkdir -p "$stub"
+          printf '%s\n' '#!/usr/bin/env bash' \
+            '[ "$1 $2" = "release view" ] && exit 1' \
+            'echo "gh $*"; [ -f release-body.md ] && cat release-body.md' > "$stub/gh"
+          chmod +x "$stub/gh"
+          for kind in Setup SystemSetup; do echo test > "DuckDuckOps-Terminal-$kind-x64-$version.exe"; done
+          echo test > "DuckDuckOps-Terminal-win32-x64-$version.zip"
+          PATH="$stub:$PATH" VERSION="$version" bash build/ddo/release.sh
