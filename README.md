@@ -22,7 +22,10 @@ VSIX files. Short name and command: `ddo`.
   `Get-ChildItem -Force | Sort-Object LastWriteTime`, `dir /a /o:-d`, `ls *.log`) set how it shows
   the folder ([`forgeFolderCommands.ts`](src/vs/forge/common/forgeFolderCommands.ts) reads them),
   and after any command it marks what was added, changed or deleted, against the folder when the
-  command started. Double-clicking a folder runs `cd` in the terminal.
+  command started. It is a tree (an async data tree; folders open in place) with Name, Modified and
+  Size columns; double-clicking a folder runs `cd` in the terminal. It is a view of the terminal's
+  panel, shown as a card of its own: [`forgeFolder.css`](src/vs/forge/browser/media/forgeFolder.css)
+  makes the panel transparent and each of its two views a card when they sit side by side.
 - The area above the terminal appears when a file, log or web page (also one Copilot opens) is
   opened, as tabs, and disappears when the last one is closed.
 - The parts are rounded cards (the "Modern UI" style) on a grey frame, with 8px gaps instead of VS

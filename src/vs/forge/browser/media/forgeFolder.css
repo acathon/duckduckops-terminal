@@ -73,22 +73,100 @@
 	min-width: 0;
 }
 
-.forge-folder .forge-folder-details {
+/* The details view: Modified and Size columns, right of the name, under their titles */
+.forge-folder .forge-folder-column {
 	flex-shrink: 0;
-	margin-left: 8px;
 	font-size: 11px;
 	color: var(--vscode-descriptionForeground);
 	font-variant-numeric: tabular-nums;
-	white-space: pre;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: right;
+}
+
+.forge-folder .forge-folder-column.time,
+.forge-folder .forge-folder-column-title.time {
+	width: 84px;
+}
+
+.forge-folder .forge-folder-column.size,
+.forge-folder .forge-folder-column-title.size {
+	width: 64px;
+	margin-left: 6px;
+}
+
+.forge-folder .forge-folder-column.hidden {
+	display: none;
+}
+
+.forge-folder .forge-folder-columns {
+	display: none;
+	align-items: center;
+	height: 22px;
+	padding: 0 10px 0 28px;
+	box-sizing: border-box;
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+	border-bottom: 1px solid var(--vscode-tree-tableColumnsBorder, transparent);
+}
+
+.forge-folder .forge-folder-columns.visible {
+	display: flex;
+}
+
+.forge-folder .forge-folder-column-title {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 2px;
+	cursor: pointer;
+	color: inherit;
+	white-space: nowrap;
+}
+
+.forge-folder .forge-folder-column-title.name {
+	flex: 1;
+	justify-content: flex-start;
+}
+
+.forge-folder .forge-folder-column-title:hover {
+	color: var(--vscode-foreground);
+}
+
+.forge-folder .forge-folder-column-title .codicon {
+	font-size: 12px;
 }
 
 .forge-folder .forge-folder-badge {
 	flex-shrink: 0;
 	width: 14px;
-	margin-left: 6px;
+	margin: 0 6px;
 	text-align: center;
 	font-size: 11px;
 	font-weight: 600;
+}
+
+/* Next to the terminal, the panel shows the terminal and the folder as two cards, with
+ * the gap the other cards have between them: the panel itself goes transparent (its
+ * title row stays on the frame) and each view gets the card's surface, edge and
+ * corners. The folder view takes the gap out of its own width (ForgeFolderView). */
+.monaco-workbench.floating-panels .part.panel:has(.monaco-pane-view .split-view-view + .split-view-view .forge-folder) {
+	border-color: transparent !important;
+	background-color: transparent !important;
+}
+
+.monaco-workbench.floating-panels .part.panel:has(.monaco-pane-view .split-view-view + .split-view-view .forge-folder) .monaco-pane-view .split-view-view > .pane {
+	box-sizing: border-box;
+	border-left: none !important;
+	border-radius: var(--vscode-cornerRadius-large);
+	background-color: var(--vscode-panel-background);
+	box-shadow: inset 0 0 0 1px var(--modern-ui-floating-card-border-color, var(--vscode-modernPanel-border, var(--vscode-surface-border, var(--vscode-widget-border, transparent))));
+}
+
+.monaco-workbench.floating-panels .part.panel:has(.monaco-pane-view .split-view-view + .split-view-view .forge-folder) .monaco-pane-view .split-view-view + .split-view-view > .pane {
+	margin-left: var(--modern-ui-floating-card-margin);
+	width: calc(100% - var(--modern-ui-floating-card-margin));
 }
 
 .forge-folder .forge-folder-row.added .label-name,
