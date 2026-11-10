@@ -4,6 +4,22 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.7.2] - Folder tree
+
+The folder panel becomes a tree with a details view, on a card of its own next to the terminal.
+
+| On startup (0.4.0, until 0.7.2 screenshots are taken) | With a log open (0.4.0) |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, the chat and Extensions in Forge Light (0.4.0)"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal (0.4.0)"> |
+
+### New
+- **The folder panel is a tree**: click a folder to open it in place, click again to close it; double-click still goes there in the terminal (`cd`). Hidden files and the order follow the last listing command in every folder you open.
+- **Details view**: **Name**, **Modified** and **Size** columns, with the column titles on top; click a title to sort by it, again to reverse. **Show Sizes and Dates** in the panel's title turns the columns off (or back on), and it is remembered.
+- **Two cards**: the terminal and the folder panel are now separate cards side by side, with the same gap as between the chat and the side bar.
+
+### Things to know
+- Every view can be moved: drag its title (Folder, Terminal, the chat, Sessions...) to another place, for example the folder panel to the side bar. **View: Reset View Locations** in the Command Palette puts them back. Drag the gap between two cards to resize them.
+
 ## [0.7.1] - Terminal extras
 
 A friendlier start for every terminal, and recordings of your terminal sessions you can replay.
