@@ -69,7 +69,7 @@ try {
 	checks['chat right of terminal'] = !!panel && !!chat && panel.x + panel.width <= chat.x + 1;
 	checks['side bar right of chat'] = !workbenchClasses.includes('nosidebar') && !!chat && !!sideBar && sideBar.x >= chat.x + chat.width - 1;
 	checks['activity bar on the right'] = !!sideBar && !!activityBarBox && activityBarBox.x >= sideBar.x + sideBar.width - 1;
-	checks['extensions in side bar'] = await window.$('.part.sidebar .extensions-viewlet').then(element => !!element);
+	checks['sessions in the activity bar'] = activityBar.some(label => label.startsWith('Sessions'));
 	checks['no file area while nothing is open'] = workbenchClasses.includes('nomaineditorarea');
 	checks['rounded parts'] = workbenchClasses.includes('modern-ui');
 	checks['duck on the chat page'] = await window.$eval('.part.auxiliarybar .chat-welcome-view-title', title => title.textContent === 'Ask the duck').catch(() => false);
