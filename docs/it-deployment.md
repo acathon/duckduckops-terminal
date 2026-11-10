@@ -47,7 +47,9 @@ DuckDuckOps-Terminal-SystemSetup-x64-<version>.exe /VERYSILENT /SUPPRESSMSGBOXES
 ## What it runs
 
 `DuckDuckOps.exe` (Electron) and its helper processes, all from the install folder. The terminal
-starts the user's shells (PowerShell, cmd, WSL, ...) like any terminal does. Copilot's agents run
+starts the user's shells (PowerShell, cmd, WSL, ...) like any terminal does. Saved sessions start
+Windows' own OpenSSH client (`C:\Windows\System32\OpenSSH\ssh.exe`) and Remote Desktop Connection
+(`mstsc.exe`); for an SSH proxy, `ssh.exe` starts `DuckDuckOps.exe` again as its `ProxyCommand`. Copilot's agents run
 commands in that terminal only after the user approves them, apart from read-only diagnostics such
 as `Get-*`, `ipconfig /all` or `kubectl get`.
 
@@ -58,6 +60,9 @@ as `Get-*`, `ipconfig /all` or `kubectl get`.
   (models, content exclusion, public code filter) like in VS Code.
 - `open-vsx.org`, `raw.githubusercontent.com`: the extension gallery (Open VSX) and its list of
   blocked extensions. The gallery address can point to an internal Open VSX server instead.
+- `api.github.com`, once a day: looks for a newer DuckDuckOps release (setting `ddo.updates.check`,
+  repository in `ddo.updates.repository`). It only shows a message with a link; nothing is downloaded
+  or installed.
 - Anything the user adds: extensions, MCP servers, SSH hosts.
 
 DuckDuckOps itself sends no telemetry: no telemetry endpoint is configured in the build. The GitHub
@@ -70,6 +75,8 @@ Copilot extension sends its usage data to GitHub, as in VS Code.
 | `%APPDATA%\DuckDuckOps` | settings, keybindings, chat history, logs |
 | `%USERPROFILE%\.ddo\extensions` | extensions the user installed |
 | `%USERPROFILE%\.ddo\agents` | the Duck agents (`.agent.md` files) |
+| `%USERPROFILE%\.ddo\sessions.json` | saved sessions (servers, ports, user names; never passwords) |
+| `%USERPROFILE%\.ddo\logs` | session output, only when the user turns logging on |
 
 The app keeps its own folders and does not share settings or extensions with VS Code. Uninstalling
 leaves these folders in place.

@@ -129,6 +129,31 @@ Three Copilot custom agents work on an ops task together, each on its own model:
   [TokenEconomizer](https://github.com/microsoft/TokenEconomizer) (Microsoft Research, Apache-2.0),
   which itself is a plugin for agent CLIs and does not run inside Copilot Chat.
 
+## Sessions
+
+The Sessions view in the right side bar ([`extensions/ddo/sessions.js`](extensions/ddo/sessions.js)) lists
+saved sessions in folders, the hosts of `~/.ssh/config` and read-only team files
+(`ddo.sessions.teamFiles`). Sessions are kept in `~/.ddo/sessions.json`
+([schema](extensions/ddo/schemas/sessions.schema.json)).
+
+| Type | Opens |
+|---|---|
+| `ssh` | Windows' OpenSSH client (`ssh.exe`) in a terminal: `-J` jump host, `-L`/`-R`/`-D` forwarding, key file, keep-alive, start folder; a SOCKS5 or HTTP proxy through [`proxy.js`](extensions/ddo/proxy.js) as `ProxyCommand`, run by DuckDuckOps itself (`ELECTRON_RUN_AS_NODE`) |
+| `tunnel` | `ssh -N` with port forwarding, started and stopped from the list |
+| `rdp` | Remote Desktop Connection (`mstsc`) with a temporary `.rdp` file |
+| `shell` | A local shell (WSL distribution, PowerShell, Command Prompt) |
+
+- Quick Connect and `ssh` commands typed in a terminal (shell integration) are saved under Recent.
+- Import from MobaXterm (`[Bookmarks]` of `MobaXterm.ini` / `.mxtsessions`) and PuTTY (registry).
+- A session's colour reaches the terminal through `DDO_TERMINAL_TINT` (a hue) in its environment:
+  `TerminalInstance` draws a border in that colour ([`forge.css`](src/vs/forge/browser/media/forge.css))
+  or tints the background (`TerminalInstanceColorProvider`).
+- Session output is logged with the `terminalDataWriteEvent` API proposal.
+
+The `ddo` extension also sets the default terminal (WSL, otherwise PowerShell; [`shell.js`](extensions/ddo/shell.js)),
+checks GitHub for a newer release once a day ([`update.js`](extensions/ddo/update.js)) and offers
+extensions for ops from Open VSX ([`opsExtensions.js`](extensions/ddo/opsExtensions.js)).
+
 ## Brand
 
 The duck is [`resources/brand/duck.png`](resources/brand/duck.png). The app icon

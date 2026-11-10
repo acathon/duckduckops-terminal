@@ -4,6 +4,39 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.5.0] - Sessions
+
+Your servers in a list, like in MobaXterm: one click opens SSH, a tunnel or Remote Desktop, and every connection is saved.
+
+| On startup | With a log open |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.5.0/desktop-terminal.png?raw=true" width="420" alt="The Sessions list in the right side bar, next to the terminal and the chat"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.5.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal"> |
+
+### New
+- **Sessions**, in the right side bar: SSH, SSH tunnels, Remote Desktop and local shells, in folders. Click one to connect. The hosts of your `~/.ssh/config` are listed too.
+- **SSH the way ops needs it**: jump host, SOCKS5 or HTTP proxy, port forwarding (local, remote, SOCKS), key file, keep-alive and a start folder, with Windows' own OpenSSH client.
+- **Tunnels** start and stop from the list; the icon turns green while one runs.
+- **Every connection is saved.** Quick Connect and `ssh` commands typed in a terminal land under **Recent** (the last 20).
+- **Import from MobaXterm** (`MobaXterm.ini` or exported `.mxtsessions`: SSH and Remote Desktop) **and PuTTY** (SSH, with proxy and port forwarding).
+- **Each session has a colour**: a border around its terminal, its tab and its icon. New sessions get one at random; production sessions are always red. `ddo.sessions.colorStyle` switches to a tinted background, or off.
+- **Session logs**: a session can save its output to a file (`ddo.sessions.logOutput`, or per session).
+- **Team sessions**: read-only session files, for example on a network share (`ddo.sessions.teamFiles`).
+- **The terminal opens in WSL** when a distribution is installed, otherwise in PowerShell 7, otherwise in Windows PowerShell (`ddo.terminal.defaultShell`).
+- **Update check**: DuckDuckOps tells you when a new release is out, and **DuckDuckOps: Check for Updates** checks now.
+- **Recommended Extensions for Ops**: PowerShell, YAML, Docker, Kubernetes, Ansible, Terraform and more from Open VSX, offered once on the first start.
+
+### Things to know
+- Passwords are never saved or imported. SSH asks for them in the terminal; keys and `ssh-agent` work as usual.
+- Proxies without authentication only, and a session uses either a jump host or a proxy, not both.
+- From MobaXterm only SSH and Remote Desktop sessions are imported, without their SSH gateway. PuTTY keys (`.ppk`) need converting to OpenSSH format with PuTTYgen.
+- X11 forwarding needs an X server, which DuckDuckOps does not include.
+- The update check asks GitHub (`api.github.com`) once a day; turn it off with `ddo.updates.check`.
+- Sessions are kept in `.ddo\sessions.json` in your user folder. **Edit Session** opens it at the session, with completion and checks.
+
+### After updating
+- Sessions opens in the right side bar on the first start. Use **Import** to bring your MobaXterm or PuTTY sessions.
+- If you chose a default terminal profile yourself, it is kept.
+
 ## [0.4.1] - Ready for managed devices
 
 On work laptops with application control, the installer of 0.4.0 can be "blocked by your system administrator". This release gives IT what it needs to deploy DuckDuckOps.
