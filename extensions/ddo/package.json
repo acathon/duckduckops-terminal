@@ -2,7 +2,7 @@
   "name": "ddo",
   "displayName": "DuckDuckOps",
   "description": "Terminal-first workstation: terminal with files below it, AI chat on the right.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "ddo",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -19,6 +19,9 @@
   ],
   "activationEvents": [
     "onStartupFinished"
+  ],
+  "enabledApiProposals": [
+    "terminalDataWriteEvent"
   ],
   "capabilities": {
     "virtualWorkspaces": false,
@@ -91,6 +94,86 @@
       {
         "command": "ddo.setupAgents",
         "title": "Set Up Agents",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.sessions.quickConnect",
+        "title": "Quick Connect...",
+        "category": "DuckDuckOps",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "ddo.sessions.new",
+        "title": "New Session...",
+        "category": "DuckDuckOps",
+        "icon": "$(add)"
+      },
+      {
+        "command": "ddo.sessions.import",
+        "title": "Import Sessions (MobaXterm, PuTTY, SSH Config)...",
+        "category": "DuckDuckOps",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "ddo.sessions.openFile",
+        "title": "Open Sessions File",
+        "category": "DuckDuckOps",
+        "icon": "$(json)"
+      },
+      {
+        "command": "ddo.sessions.openLogs",
+        "title": "Open Session Logs Folder",
+        "category": "DuckDuckOps",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "ddo.sessions.refresh",
+        "title": "Refresh Sessions",
+        "category": "DuckDuckOps",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ddo.sessions.connect",
+        "title": "Connect",
+        "category": "DuckDuckOps",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ddo.sessions.stopTunnel",
+        "title": "Stop Tunnel",
+        "category": "DuckDuckOps",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "ddo.sessions.edit",
+        "title": "Edit Session",
+        "category": "DuckDuckOps",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "ddo.sessions.duplicate",
+        "title": "Duplicate Session",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.sessions.copyCommand",
+        "title": "Copy SSH Command",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.sessions.delete",
+        "title": "Delete Session",
+        "category": "DuckDuckOps",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "ddo.recommendedExtensions",
+        "title": "Recommended Extensions for Ops...",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.checkForUpdates",
+        "title": "Check for Updates...",
         "category": "DuckDuckOps"
       }
     ],
@@ -250,6 +333,83 @@
           "type": "string",
           "default": "",
           "description": "Folder with internal .vsix files, installed by 'Install VSIX Files from Internal Folder'."
+        },
+        "ddo.sessions.file": {
+          "type": "string",
+          "default": "~/.ddo/sessions.json",
+          "description": "File with the saved sessions."
+        },
+        "ddo.sessions.teamFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Read-only session files shared by a team (for example on a network share), each shown as a group in the Sessions list. Same format as `ddo.sessions.file`."
+        },
+        "ddo.sessions.sshPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "The `ssh` program. Empty: Windows' own OpenSSH client (`C:\\Windows\\System32\\OpenSSH\\ssh.exe`)."
+        },
+        "ddo.sessions.logOutput": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Save the output of every session to a log file in `ddo.sessions.logFolder`. A session can also turn it on for itself (`\"log\": true`)."
+        },
+        "ddo.sessions.logFolder": {
+          "type": "string",
+          "default": "~/.ddo/logs",
+          "description": "Folder for session log files, one sub folder per session."
+        },
+        "ddo.sessions.colorStyle": {
+        "type": "string",
+        "enum": [
+          "border",
+          "background",
+          "none"
+        ],
+        "enumDescriptions": [
+          "A border in the session's colour around its terminal.",
+          "The terminal's background tinted with the session's colour.",
+          "Only the terminal tab icon has the session's colour."
+        ],
+        "default": "border",
+        "description": "How a session terminal shows the session's colour (random for new sessions, red for production)."
+      },
+      "ddo.sessions.rememberTypedSsh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save ssh commands typed in a terminal as sessions under Recent."
+        },
+        "ddo.terminal.defaultShell": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "wsl",
+            "powershell",
+            "cmd",
+            "manual"
+          ],
+          "enumDescriptions": [
+            "WSL when a distribution is installed, otherwise PowerShell 7, otherwise Windows PowerShell.",
+            "The default WSL distribution.",
+            "PowerShell 7 when installed, otherwise Windows PowerShell.",
+            "Command Prompt.",
+            "Leave terminal.integrated.defaultProfile.windows as it is."
+          ],
+          "default": "auto",
+          "description": "The shell of new terminals on Windows. A default terminal profile you chose yourself is kept."
+        },
+        "ddo.updates.check": {
+          "type": "boolean",
+          "default": true,
+          "description": "Look for a newer DuckDuckOps release on GitHub once a day."
+        },
+        "ddo.updates.repository": {
+          "type": "string",
+          "default": "acathon/duckduckops-terminal",
+          "description": "The GitHub repository (owner/name) whose releases the update check looks at."
         }
       }
     },
@@ -294,6 +454,139 @@
         "editor.stickyScroll.enabled": false,
         "editor.scrollBeyondLastLine": false
       }
-    }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ddo-sessions",
+          "title": "Sessions",
+          "icon": "media/sessions.svg"
+        }
+      ]
+    },
+    "views": {
+      "ddo-sessions": [
+        {
+          "id": "ddo.sessions",
+          "name": "Sessions",
+          "icon": "media/sessions.svg",
+          "contextualTitle": "Sessions"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "ddo.sessions",
+        "contents": "Save your servers once and connect with a click: SSH with jump host, SOCKS5 or HTTP proxy and port forwarding, SSH tunnels, Remote Desktop and local shells.\n[Quick Connect](command:ddo.sessions.quickConnect)\n[New Session](command:ddo.sessions.new)\nComing from MobaXterm or PuTTY?\n[Import Sessions](command:ddo.sessions.import)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ddo.sessions.quickConnect",
+          "when": "view == ddo.sessions",
+          "group": "navigation@1"
+        },
+        {
+          "command": "ddo.sessions.new",
+          "when": "view == ddo.sessions",
+          "group": "navigation@2"
+        },
+        {
+          "command": "ddo.sessions.import",
+          "when": "view == ddo.sessions",
+          "group": "navigation@3"
+        },
+        {
+          "command": "ddo.sessions.refresh",
+          "when": "view == ddo.sessions",
+          "group": "navigation@4"
+        },
+        {
+          "command": "ddo.sessions.openFile",
+          "when": "view == ddo.sessions",
+          "group": "1_files@1"
+        },
+        {
+          "command": "ddo.sessions.openLogs",
+          "when": "view == ddo.sessions",
+          "group": "1_files@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ddo.sessions.connect",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\.(ssh|rdp|shell|tunnel(?!\\.running))/",
+          "group": "inline@1"
+        },
+        {
+          "command": "ddo.sessions.stopTunnel",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\.tunnel\\.running/",
+          "group": "inline@1"
+        },
+        {
+          "command": "ddo.sessions.connect",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\.(ssh|rdp|shell|tunnel(?!\\.running))/",
+          "group": "1_connect@1"
+        },
+        {
+          "command": "ddo.sessions.stopTunnel",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\.tunnel\\.running/",
+          "group": "1_connect@1"
+        },
+        {
+          "command": "ddo.sessions.copyCommand",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\.(ssh|tunnel)/",
+          "group": "2_copy@1"
+        },
+        {
+          "command": "ddo.sessions.edit",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\./ && viewItem =~ /^(?!.*readonly)/",
+          "group": "3_edit@1"
+        },
+        {
+          "command": "ddo.sessions.duplicate",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\./ && viewItem =~ /^(?!.*readonly)/",
+          "group": "3_edit@2"
+        },
+        {
+          "command": "ddo.sessions.delete",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\./ && viewItem =~ /^(?!.*readonly)/",
+          "group": "4_delete@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ddo.sessions.connect",
+          "when": "false"
+        },
+        {
+          "command": "ddo.sessions.stopTunnel",
+          "when": "false"
+        },
+        {
+          "command": "ddo.sessions.edit",
+          "when": "false"
+        },
+        {
+          "command": "ddo.sessions.duplicate",
+          "when": "false"
+        },
+        {
+          "command": "ddo.sessions.copyCommand",
+          "when": "false"
+        },
+        {
+          "command": "ddo.sessions.delete",
+          "when": "false"
+        }
+      ]
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "**/.ddo/sessions.json",
+        "url": "./schemas/sessions.schema.json"
+      }
+    ]
   }
 }

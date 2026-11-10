@@ -1,0 +1,68 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "DuckDuckOps sessions",
+	"type": "object",
+	"properties": {
+		"version": { "type": "number", "const": 1 },
+		"sessions": {
+			"type": "array",
+			"items": { "$ref": "#/definitions/session" }
+		}
+	},
+	"definitions": {
+		"session": {
+			"type": "object",
+			"required": ["id", "name", "type"],
+			"properties": {
+				"id": { "type": "string", "description": "Unique id of the session." },
+				"name": { "type": "string", "description": "Name in the Sessions list and on the terminal tab." },
+				"folder": { "type": "string", "description": "Folder in the Sessions list; use / for sub folders, for example \"Prod/Web\"." },
+				"type": {
+					"enum": ["ssh", "tunnel", "rdp", "shell"],
+					"enumDescriptions": ["SSH terminal", "SSH port forwarding only (ssh -N), started and stopped from the list", "Remote Desktop", "Local shell"]
+				},
+				"host": { "type": "string", "description": "Server name or address (for ssh, tunnel and rdp)." },
+				"port": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "Port, if not the default (22 for SSH, 3389 for Remote Desktop)." },
+				"user": { "type": "string", "description": "User name." },
+				"identityFile": { "type": "string", "description": "Private key file in OpenSSH format, ~ allowed (ssh -i)." },
+				"jump": { "type": "string", "description": "Jump host(s): user@bastion or user@bastion:port, several separated by commas (ssh -J)." },
+				"proxy": {
+					"type": "object",
+					"description": "SOCKS5 or HTTP (CONNECT) proxy to reach the server, without authentication. Not used together with a jump host.",
+					"required": ["type", "host", "port"],
+					"properties": {
+						"type": { "enum": ["socks5", "http"] },
+						"host": { "type": "string" },
+						"port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+					},
+					"additionalProperties": false
+				},
+				"forwards": {
+					"type": "array",
+					"description": "Port forwarding: \"L 8080:host:80\" (local), \"R 9000:localhost:9000\" (remote), \"D 1080\" (SOCKS). A bind address can come first: \"L 127.0.0.1:8080:host:80\".",
+					"items": { "type": "string", "pattern": "^\\s*[LRDlrd]\\s*\\S+\\s*$" }
+				},
+				"keepAlive": { "type": "integer", "minimum": 1, "description": "Seconds between keep-alive messages (ServerAliveInterval)." },
+				"compression": { "type": "boolean", "description": "Compress the connection (ssh -C)." },
+				"x11": { "type": "boolean", "description": "Forward X11 (ssh -X); needs an X server on this PC." },
+				"remoteCommand": { "type": "string", "description": "Command to run on the server instead of a login shell." },
+				"startDir": { "type": "string", "description": "Folder to start the login shell in on the server." },
+				"options": {
+					"type": "array",
+					"description": "Other OpenSSH options, as for ssh -o, for example \"StrictHostKeyChecking=accept-new\".",
+					"items": { "type": "string" }
+				},
+				"shell": { "type": "string", "description": "Program of a local shell session." },
+				"args": { "type": "array", "items": { "type": "string" }, "description": "Arguments of a local shell session." },
+				"production": { "type": "boolean", "description": "A production server: always red." },
+				"color": {
+					"enum": ["yellow", "green", "cyan", "blue", "magenta", "red"],
+					"description": "Colour of the session's terminal border (or background, see ddo.sessions.colorStyle), tab and icon. New sessions get one at random; production sessions are always red."
+				},
+				"log": { "type": "boolean", "description": "Save the output of this session to a log file (see ddo.sessions.logFolder)." },
+				"auto": { "type": "boolean", "description": "Saved automatically from a connection (Recent)." },
+				"lastUsed": { "type": "number", "description": "When the session was last opened (milliseconds since 1970)." }
+			}
+		}
+	}
+}

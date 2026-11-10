@@ -4,6 +4,10 @@ const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
 const agents = require('./agents');
+const sessions = require('./sessions');
+const shell = require('./shell');
+const update = require('./update');
+const opsExtensions = require('./opsExtensions');
 
 const cfg = () => vscode.workspace.getConfiguration('ddo');
 const LOG_RE = /\.(log|txt|out|err)(\.\d+)?$/i;
@@ -103,8 +107,11 @@ function activate(context) {
 		} else { status.hide(); }
 	};
 
+	const savedSessions = sessions.register(context);
+
 	// ---- terminal output capture (shell integration) ----
 	context.subscriptions.push(vscode.window.onDidStartTerminalShellExecution(async e => {
+		savedSessions.rememberTypedSsh(e.execution.commandLine.value);
 		append(e.terminal, `\n$ ${e.execution.commandLine.value}\n`);
 		try { for await (const d of e.execution.read()) { append(e.terminal, stripAnsi(d)); } } catch { /* terminal closed */ }
 	}));
@@ -229,6 +236,8 @@ function activate(context) {
 	});
 	reg('ddo.resetLayout', () => applyLayout(context, true));
 	reg('ddo.setupAgents', () => agents.setUpAgents());
+	reg('ddo.recommendedExtensions', () => opsExtensions.showRecommendedExtensions());
+	reg('ddo.checkForUpdates', () => update.checkForUpdates(context, true));
 
 	// ---- chat participant ----
 	const participant = vscode.chat.createChatParticipant('ddo.duck', async (request, chatCtx, stream, token) => {
@@ -277,6 +286,9 @@ function activate(context) {
 	updateStatus();
 	applyLayout(context, false).then(undefined, () => { });
 	agents.setUpOnFirstRun(context);
+	shell.chooseDefaultShell(context, terminal => !buffers.get(terminal)?.text).then(undefined, () => { });
+	update.checkForUpdates(context, false).then(undefined, () => { });
+	opsExtensions.offerOnFirstRun(context).then(undefined, () => { });
 }
 
 function deactivate() { }
