@@ -53,7 +53,7 @@ import { defaultFolderListing, FolderShellKind, FolderSortKey, IFolderListing, i
 // sets how it shows the folder; after any command it marks what was added,
 // changed or deleted, and the files the command named; a file watcher keeps it
 // current while a command runs. Double-clicking a folder runs `cd` in the
-// terminal; a file opens below the terminal.
+// terminal; a file opens above the terminal.
 
 export const FOLDER_VIEW_ID = 'ddo.folder';
 

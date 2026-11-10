@@ -17,13 +17,14 @@ import { BrowserViewCommandId } from '../../platform/browserView/common/browserV
 import { Extensions, IConfigurationRegistry } from '../../platform/configuration/common/configurationRegistry.js';
 import product from '../../platform/product/common/product.js';
 import { Registry } from '../../platform/registry/common/platform.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
 import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../workbench/common/contributions.js';
 import { IViewContainersRegistry, ViewContainerLocation, Extensions as ViewExtensions } from '../../workbench/common/views.js';
 import { VIEWLET_ID as EXTENSIONS_VIEWLET_ID } from '../../workbench/contrib/extensions/common/extensions.js';
 import { VIEWLET_ID as EXPLORER_VIEWLET_ID } from '../../workbench/contrib/files/common/files.js';
 import { IEditorGroupsService } from '../../workbench/services/editor/common/editorGroupsService.js';
 import { IEditorService } from '../../workbench/services/editor/common/editorService.js';
-import { IWorkbenchLayoutService, Parts } from '../../workbench/services/layout/browser/layoutService.js';
+import { IWorkbenchLayoutService, Parts, Position } from '../../workbench/services/layout/browser/layoutService.js';
 import { IPaneCompositePartService } from '../../workbench/services/panecomposite/browser/panecomposite.js';
 
 // The files contribution (opening files) also registers the Explorer view
@@ -36,7 +37,8 @@ if (explorerViewContainer) {
 }
 
 // Defaults for the terminal-first layout, see `ForgeWorkbench`: the terminal
-// (panel) above the files and browser pages (editor), the chat (secondary side
+// (panel) at the bottom, below the files, browser pages and Markdown previews
+// (editor, shown only while something is open), the chat (secondary side
 // bar) to their right, and the primary side bar (Extensions, Accounts) on the
 // far right next to a compact activity bar. The title bar has buttons to
 // toggle each part. The theme follows the Windows light or dark mode. Only the
@@ -46,7 +48,7 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'workbench.startupEditor': 'none',
 		'workbench.tips.enabled': false,
 		'onboarding.enabled': false,
-		'workbench.panel.defaultLocation': 'top',
+		'workbench.panel.defaultLocation': 'bottom',
 		'workbench.sideBar.location': 'right',
 		'workbench.secondarySideBar.defaultVisibility': 'visible',
 		'workbench.activityBar.compact': true,
@@ -128,18 +130,27 @@ MenuRegistry.appendMenuItem(MenuId.TitleBar, {
  * Starts every window with the terminal and the primary side bar shown.
  * Showing the terminal panel creates a terminal when there is none. With the
  * Explorer removed the side bar has no default view, so it opens Extensions
- * unless a view is already restored there.
+ * unless a view is already restored there. Until 0.7.0 the terminal was above
+ * the files: windows that remember that position move it to the bottom once.
  */
 class ForgeStartupLayoutContribution extends Disposable implements IWorkbenchContribution {
 
 	static readonly ID = 'workbench.contrib.forgeStartupLayout';
+	private static readonly PANEL_AT_BOTTOM_KEY = 'ddo.layout.panelAtBottom';
 
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService
+		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IStorageService storageService: IStorageService
 	) {
 		super();
 
+		if (!storageService.getBoolean(ForgeStartupLayoutContribution.PANEL_AT_BOTTOM_KEY, StorageScope.PROFILE, false)) {
+			if (layoutService.getPanelPosition() === Position.TOP) {
+				layoutService.setPanelPosition(Position.BOTTOM);
+			}
+			storageService.store(ForgeStartupLayoutContribution.PANEL_AT_BOTTOM_KEY, true, StorageScope.PROFILE, StorageTarget.MACHINE);
+		}
 		layoutService.setPartHidden(false, Parts.PANEL_PART);
 		if (!paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)) {
 			paneCompositeService.openPaneComposite(EXTENSIONS_VIEWLET_ID, ViewContainerLocation.Sidebar, false);
@@ -151,7 +162,7 @@ class ForgeStartupLayoutContribution extends Disposable implements IWorkbenchCon
 registerWorkbenchContribution2(ForgeStartupLayoutContribution.ID, ForgeStartupLayoutContribution, WorkbenchPhase.AfterRestored);
 
 /**
- * Shows the editor area below the terminal only while it has something open
+ * Shows the editor area above the terminal only while it has something open
  * (a file, a log, a browser page). Otherwise the terminal takes the full height.
  */
 class ForgeEditorAreaContribution extends Disposable implements IWorkbenchContribution {

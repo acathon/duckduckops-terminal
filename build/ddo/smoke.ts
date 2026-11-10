@@ -5,7 +5,7 @@
 
 // Launches a packaged DuckDuckOps build with a fresh profile, checks that the
 // terminal and chat are on screen in the DuckDuckOps layout, opens a file to check
-// that it appears below the terminal, and saves screenshots, the activity bar
+// that it appears above the terminal, and saves screenshots, the activity bar
 // entries, renderer errors, the logs and the app's size. Used by the DuckDuckOps
 // build workflow.
 //
@@ -80,7 +80,7 @@ try {
 	checks['folder panel right of the terminal'] = !!terminalBox && !!folderBox && folderBox.x >= terminalBox.x + terminalBox.width - 1;
 	checks['folder panel lists files'] = await window.waitForSelector('.part.panel .forge-folder .forge-folder-row', { state: 'visible', timeout: 15_000 }).then(() => true, () => false);
 
-	// An opened file (a log, through quick open) appears below the terminal
+	// An opened file (a log, through quick open) appears above the terminal
 	const logFile = path.join(profileDir, 'service.log');
 	fs.writeFileSync(logFile, [
 		'2026-10-28 09:14:02.118 INFO  [main] Service starting, version 4.2.1',
@@ -95,9 +95,9 @@ try {
 	await window.keyboard.type(logFile);
 	await window.waitForTimeout(1_000);
 	await window.keyboard.press('Enter');
-	checks['file below terminal'] = await window.waitForSelector('.part.editor .monaco-editor', { state: 'visible', timeout: 15_000 }).then(async () => {
+	checks['file above terminal'] = await window.waitForSelector('.part.editor .monaco-editor', { state: 'visible', timeout: 15_000 }).then(async () => {
 		const [terminal, editor] = await Promise.all([box('.part.panel'), box('.part.editor')]);
-		return !!terminal && !!editor && editor.y >= terminal.y + terminal.height - 1;
+		return !!terminal && !!editor && terminal.y >= editor.y + editor.height - 1;
 	}, () => false);
 	// Let the terminal's size overlay fade after the resize
 	await window.waitForTimeout(3_000);
