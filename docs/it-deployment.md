@@ -76,6 +76,9 @@ as `Get-*`, `ipconfig /all` or `kubectl get`.
 - `github.com` (the `github/copilot-cli` releases) and its download host `*.githubusercontent.com`:
   only when a user agrees to install GitHub Copilot CLI, from the `copilot` command or the per-user
   installer's Copilot CLI page. Never during a silent install.
+- `wttr.in`, at most every 30 minutes while the app runs: the weather line at the top of new
+  terminals (from 0.7.1). wttr.in sees the computer's public address. Turn it off with the setting
+  `ddo.terminal.welcomeLines` (leave out `weather`).
 - Anything the user adds: extensions, MCP servers, SSH hosts.
 
 DuckDuckOps itself sends no telemetry: no telemetry endpoint is configured in the build. The GitHub
@@ -90,6 +93,7 @@ Copilot extension sends its usage data to GitHub, as in VS Code.
 | `%USERPROFILE%\.ddo\agents` | the Duck agents (`.agent.md` files) |
 | `%USERPROFILE%\.ddo\sessions.json` | saved sessions (servers, ports, user names; never passwords) |
 | `%USERPROFILE%\.ddo\logs` | session output, only when the user turns logging on |
+| `%USERPROFILE%\.ddo\recordings` | terminal recordings (`.cast`), only when the user records a terminal; they hold everything the terminal showed |
 
 The app keeps its own folders and does not share settings or extensions with VS Code. Uninstalling
 leaves these folders in place.

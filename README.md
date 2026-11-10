@@ -79,7 +79,7 @@ How it is done:
   target offers **Copilot CLI** (sessions from the Copilot extension) and **Copilot** (the Copilot
   harness, also used when the GitHub org enforces Copilot sandbox or permission settings). Both get the
   MCP servers and the Duck agents. New chats keep the Local harness (`chat.defaultToCopilotHarness` is
-  off), where `@duck` runs. With `false`, the build leaves the runtime out (about 100 MB), Copilot CLI
+  off), where `@duck` runs. With `false`, the build leaves the runtime out (about 260 MB), Copilot CLI
   sessions are off and the Agent Host is never started
   ([`forgeAgentHostEnablementService.ts`](src/vs/forge/browser/forgeAgentHostEnablementService.ts)).
 - **What the build leaves out:** the standard workbench bundle and the Agents window
@@ -166,6 +166,13 @@ ends with `DONE`, after `ddo.duo.maxTurns` answers, when a request is cancelled,
 - **Ask the Duck** in the terminal's context menu asks about the selected text.
 - `@duck /summary` writes an incident summary of the terminal session (the commands carry their times),
   which **Open as Markdown** opens in an editor.
+- New terminals start with the date, the weather ([wttr.in](https://wttr.in)) and a joke or a tip,
+  written to the terminal's screen just before the shell's first output
+  ([`forgeTerminalWelcome.ts`](src/vs/forge/browser/forgeTerminalWelcome.ts); settings
+  `ddo.terminal.welcomeLines`, `ddo.terminal.weatherLocation`).
+- **Record Terminal** saves what a terminal shows as an asciinema v2 `.cast` file, from the terminal
+  data and size events of the extension API ([`recorder.js`](extensions/ddo/recorder.js)); **Play
+  Terminal Recording** replays it in a terminal of the extension.
 
 ## Sessions
 

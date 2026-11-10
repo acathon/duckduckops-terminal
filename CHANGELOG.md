@@ -4,6 +4,24 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.7.1] - Terminal extras
+
+A friendlier start for every terminal, and recordings of your terminal sessions you can replay.
+
+| On startup (0.4.0, until 0.7.1 screenshots are taken) | With a log open (0.4.0) |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, the chat and Extensions in Forge Light (0.4.0)"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal (0.4.0)"> |
+
+### New
+- **A welcome in each new terminal**: the date and the weather, then an ops joke or, now and then, a DuckDuckOps tip. The lines are only shown, never sent to the shell; terminals for tasks, Copilot's own and SSH sessions start without them.
+- **Record a terminal**: **Record Terminal** in the terminal's title bar (or its right-click menu) records what it shows; **REC** in the status bar shows the time, click it or **Stop Recording and Save** to save an asciinema `.cast` file: a few KB per minute, plain text you can read and edit.
+- **Play Terminal Recording** replays a `.cast` in a terminal, at the same pace (long pauses shortened to 3 s): space pauses, `+` and `-` change the speed, `r` plays again, `q` closes. Also `asciinema play`, or asciinema.org.
+
+### Things to know
+- The weather comes from [wttr.in](https://wttr.in), which finds your city from your network address; set **DuckDuckOps > Terminal: Weather Location** to choose it, or remove `weather` from **Welcome Lines**. An empty **Welcome Lines** list turns the welcome off.
+- A recording keeps everything the terminal shows, passwords, keys or tokens included if they appear. What you type is recorded only when the shell shows it. Check a recording before you share it.
+- Recordings go to `.ddo\recordings` in your user folder unless you pick another place.
+
 ## [0.7.0] - Folder
 
 A panel next to the terminal shows the folder you're in and follows everything you do there; new colour icons; and a second theme, Forge Hackerman.
@@ -54,7 +72,7 @@ Several chats on different models, one above the other, that pass their answers 
 - Every answer in every chat is a Copilot request, and premium models count more. Talking chats use several requests per question.
 - New chats still start on the **Local** harness, where `@duck` runs. `@duck` is not available in Copilot CLI and Copilot chats.
 - The installers add the `copilot` command to the PATH next to `ddo`, unless you clear **Add to PATH** or pick otherwise on the Copilot CLI page. IT can leave it out, see the deployment notes.
-- The app is about 100 MB bigger again, for the Copilot harness (the Agent Host).
+- The app is about 260 MB bigger again (880 MB installed instead of 620), for the Copilot CLI runtime and the Copilot harness (the Agent Host).
 
 ### After updating
 - Open a second chat with **Add Chat** (the split icon in the chat's title), pick a model in each, ask in the first one, then **Let the Chats Talk**.
