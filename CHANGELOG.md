@@ -16,15 +16,19 @@ A panel next to the terminal shows the folder you're in and follows everything y
 - **Folder panel**, right of the terminal: the folder the terminal is in, with PowerShell, cmd, WSL or Git Bash. It follows `cd`, and it follows everything else too:
   - **listing commands** set how it shows the folder: hidden files (`ls -a`, `Get-ChildItem -Force`, `dir /a`), sizes and dates (`ls -l`), the order (`ls -t`, `-S`, `-X`, `-r`, `| Sort-Object LastWriteTime`, `dir /o:-d`), a pattern (`ls *.log`) or another folder (`ls /var/log`);
   - **after any command** (`git pull`, `tar -x`, `rm`, a script...) it marks what was **new**, **changed** or **deleted**, and the files the command named. It updates while a long command runs.
-  - **Double-click a folder** to `cd` there in the terminal; **click a file** to open it below the terminal. Drag a file onto the terminal to type its path; right-click to copy its path or show it in File Explorer.
+  - **Double-click a folder** to `cd` there in the terminal; **click a file** to open it above the terminal. Drag a file onto the terminal to type its path; right-click to copy its path or show it in File Explorer.
 - **Forge Icons**: colour icons for files and folders (logs, configs, scripts, keys and certificates, archives, Docker, Terraform, `.git`, `.ssh`...), from [Phosphor](https://phosphoricons.com). The activity bar's icons are Phosphor's two-tone icons.
 - **Forge Hackerman Dark and Light**: phosphor green on black, or deep green on mint, with a green terminal.
 - **DuckDuckOps: Choose Theme** in the Command Palette: Forge or Forge Hackerman, light, dark, or **like Windows** (light by day, dark at night, with your Windows setting).
+- **A new icon**: the pixel-art duck with its headset, on the app, the taskbar, the Start menu and the installer.
+- **The terminal is at the bottom**, with the folder panel: files, logs, web pages and Markdown previews open above it, and the area closes with the last tab.
+- **The duck as the chat pet** (a first version of its pictures): **DuckDuckOps: Show or Hide the Duck** in the Command Palette, or `/vscode-pet` in the chat. It sleeps, wakes up, types along with you, thinks while Copilot answers and worries when something goes wrong.
 
 ### Things to know
 - The folder panel needs the terminal's shell integration, on by default, to follow `cd` and commands. In a terminal connected over SSH it shows nothing: the files are on the other computer.
 - Hide the panel by right-clicking its title, or drag the line between it and the terminal to resize it.
 - If you picked another file icon theme before, it stays: pick **Forge Icons** under **File Icon Theme** in the Command Palette.
+- If your terminal was above the files, it moves to the bottom once. To put it back on top, right-click its title and pick **Panel Position**.
 
 ### After updating
 - Run a few commands in the terminal (`ls -la`, `cd ..`, `git pull`) and watch the folder panel.

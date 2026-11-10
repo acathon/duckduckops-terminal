@@ -1,4 +1,4 @@
-<p align="center"><img src="resources/brand/duck.png" width="180" alt="The DuckDuckOps duck: a rubber duck with a headset and a navy hoodie"></p>
+<p align="center"><img src="resources/brand/app-icon.png" width="160" alt="The DuckDuckOps icon: a pixel-art duck with a headset and a navy hoodie"></p>
 
 # DuckDuckOps Terminal
 
@@ -8,12 +8,12 @@ Coding features are removed. Extensions can be installed from Open VSX, an inter
 VSIX files. Short name and command: `ddo`.
 
 ```
-+---------------+--------+-----------+------------+----+
-|   terminal    | folder |           |            |    |
-+---------------+--------+  Copilot  | Extensions | AB |
-| files, logs, browser   |   Chat    | (side bar) |    |
-| (only while open)      |           |            |    |
 +------------------------+-----------+------------+----+
+| files, logs, browser,  |           |            |    |
+| Markdown (while open)  |  Copilot  | Extensions | AB |
++---------------+--------+   Chat    | (side bar) |    |
+|   terminal    | folder |           |            |    |
++---------------+--------+-----------+------------+----+
 ```
 
 - The folder panel next to the terminal
@@ -23,7 +23,7 @@ VSIX files. Short name and command: `ddo`.
   the folder ([`forgeFolderCommands.ts`](src/vs/forge/common/forgeFolderCommands.ts) reads them),
   and after any command it marks what was added, changed or deleted, against the folder when the
   command started. Double-clicking a folder runs `cd` in the terminal.
-- The area below the terminal appears when a file, log or web page (also one Copilot opens) is
+- The area above the terminal appears when a file, log or web page (also one Copilot opens) is
   opened, as tabs, and disappears when the last one is closed.
 - The parts are rounded cards (the "Modern UI" style) on a grey frame, with 8px gaps instead of VS
   Code's 4px (`FORGE_FLOATING_PANEL_MARGIN` in

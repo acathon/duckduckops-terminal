@@ -5,7 +5,7 @@
 	"dataFolderName": ".ddo",
 	"forge": {
 		"enabled": true,
-		"version": "0.6.0",
+		"version": "0.7.0",
 		"copilotRuntime": true,
 		"petSprites": "vs/forge/browser/media/duckPet",
 		"builtInExtensions": [
