@@ -110,6 +110,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # VS Code's `copilot` command for the terminal (copilot_shim): it runs GitHub
+      # Copilot CLI, or offers to install it the first time. Microsoft compiles it in
+      # its own pipeline, so packaging leaves it out. In the app folder, the Copilot
+      # extension adds it to the terminal's PATH, and setup publishes it
+      # (build/win32/copilot.iss).
+      - name: Build the copilot command
+        shell: pwsh
+        working-directory: copilot_shim
+        run: |
+          . ../build/azure-pipelines/win32/exec.ps1
+          $ErrorActionPreference = "Stop"
+          exec { cargo build --release --locked --bin copilot }
+          $shim = '..\..\VSCode-win32-x64\bin\copilot-shim'
+          New-Item -ItemType Directory -Force $shim | Out-Null
+          Copy-Item target\release\copilot.exe $shim
+
       - name: Launch, check the layout and take screenshots
         shell: pwsh
         run: node build/ddo/smoke.ts ..\VSCode-win32-x64 .build\ddo-smoke
@@ -120,7 +136,8 @@ jobs:
         run: Compress-Archive -Path ..\VSCode-win32-x64\* -DestinationPath .build\DuckDuckOps-Terminal-win32-x64-${{ steps.meta.outputs.version }}.zip
 
       # A per-user installer (Inno Setup, build/win32/code.iss): no administrator
-      # rights needed, Start menu entry, `ddo` on PATH, uninstall from Windows settings
+      # rights needed, Start menu entry, `ddo` and `copilot` on PATH, uninstall from
+      # Windows settings
       - name: Build the installer
         shell: pwsh
         run: |
@@ -141,7 +158,7 @@ jobs:
             $dir = Join-Path $env:RUNNER_TEMP "ddo-$kind"
             $setup = Start-Process ".build\DuckDuckOps-Terminal-$kind-x64-${{ steps.meta.outputs.version }}.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$dir", '/MERGETASKS=!runcode' -Wait -PassThru
             if ($setup.ExitCode -ne 0) { throw "$kind exited with code $($setup.ExitCode)" }
-            foreach ($file in 'DuckDuckOps.exe', 'bin\ddo.cmd', 'resources\app\product.json', 'unins000.exe') {
+            foreach ($file in 'DuckDuckOps.exe', 'bin\ddo.cmd', 'bin\copilot-shim\copilot.exe', 'resources\app\product.json', 'unins000.exe') {
               if (-not (Test-Path (Join-Path $dir $file))) { throw "$kind did not install $file" }
             }
             $uninstall = Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru

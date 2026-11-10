@@ -55,8 +55,15 @@ const USER_ENVIRONMENT_KEY: &str = "Environment";
 
 use super::CLI_INSTALL_FOLDER;
 
-/// The policy registry key names (`win32RegValueName`) of the VS Code qualities.
-const PRODUCT_POLICY_KEYS: [&str; 4] = ["VSCode", "VSCodeInsiders", "VSCodeExploration", "CodeOSS"];
+/// The policy registry key names (`win32RegValueName`) of the VS Code qualities, and of DuckDuckOps, whose setup
+/// checks the same keys (build/win32/copilot.iss).
+const PRODUCT_POLICY_KEYS: [&str; 5] = [
+	"VSCode",
+	"VSCodeInsiders",
+	"VSCodeExploration",
+	"CodeOSS",
+	"DuckDuckOps",
+];
 
 fn wide(value: &OsStr) -> Vec<u16> {
 	value.encode_wide().chain(std::iter::once(0)).collect()
