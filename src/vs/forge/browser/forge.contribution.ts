@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import './media/forge.css';
+import './forgeDuo.js';
 import { mainWindow } from '../../base/browser/window.js';
 import { Codicon } from '../../base/common/codicons.js';
 import { Disposable } from '../../base/common/lifecycle.js';
