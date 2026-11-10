@@ -6,7 +6,7 @@ For each release, take screenshots of the build (`node build/ddo/smoke.ts <app f
 
 ## [0.7.2] - Folder tree
 
-The folder panel becomes a tree with a details view, on a card of its own next to the terminal.
+The folder panel becomes a tree with a details view, in a column of its own on the left, and the terminal gets its full width back. The chat moves to the right side bar, with Sessions and Extensions.
 
 | On startup (0.4.0, until 0.7.2 screenshots are taken) | With a log open (0.4.0) |
 |---|---|
@@ -15,10 +15,11 @@ The folder panel becomes a tree with a details view, on a card of its own next t
 ### New
 - **The folder panel is a tree**: click a folder to open it in place, click again to close it; double-click still goes there in the terminal (`cd`). Hidden files and the order follow the last listing command in every folder you open.
 - **Details view**: **Name**, **Modified** and **Size** columns, with the column titles on top; click a title to sort by it, again to reverse. The details view is the default and stays in a narrow panel, with short values (`15m`, `2d`, `12K`; the full date and size on hover). The first button at the top right of the Folder panel switches to **Tree View** (names only) and back to **Details View**, and it is remembered. The buttons in the title of every view are now always shown, not only when the mouse is over it.
-- **Two cards**: the terminal and the folder panel are now separate cards side by side, with the same gap as between the chat and the side bar.
+- **The folder panel is a column on the left** (the secondary side bar), the full height of the window. It opens by itself when the terminal does something with folders or files (`cd`, `ls`, `dir`, `mkdir`, `rm`, `tar`...), and the secondary side bar button in the title bar shows or hides it. If you close it, it stays closed until the next window (setting **DuckDuckOps > Folder: Auto Open**).
+- **The chat is in the right side bar**, with Sessions and Extensions: the activity bar on the right switches between them, and the chat is open at startup. The terminal no longer shares its width with anything.
 
 ### Things to know
-- Every view can be moved: drag its title (Folder, Terminal, the chat, Sessions...) to another place, for example the folder panel to the side bar. **View: Reset View Locations** in the Command Palette puts them back. Drag the gap between two cards to resize them.
+- After the update, the chat moves to the right side bar once. Every view can still be moved: drag its title (Folder, the chat, Sessions...) to another place, or right-click it. **View: Reset View Locations** in the Command Palette puts them back as they were in VS Code. Drag the gap between two cards to resize them.
 
 ## [0.7.1] - Terminal extras
 

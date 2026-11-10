@@ -4,59 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Workbench } from '../../workbench/browser/workbench.js';
-import { isHorizontal, PanelAlignment, Position } from '../../workbench/services/layout/browser/layoutService.js';
 
 /**
  * The DuckDuckOps workbench: the standard workbench parts in a terminal-first
- * arrangement. With the panel (terminal) below or above the editor (files and
- * browser pages) and the primary side bar on the right, the standard layout puts
- * the secondary side bar (chat) on the left. This workbench keeps it to the right
- * of the terminal instead, between the terminal and the primary side bar:
+ * arrangement. With the primary side bar on the right, the standard layout puts
+ * the secondary side bar on the left, which is where DuckDuckOps wants its folder
+ * panel; the chat is moved to the primary side bar (`forge.contribution.ts`):
  *
  * ```
- * +-------------------+--------+----------+----+
- * |  files, browser   |        |          |    |
- * +-------------------+  chat  | side bar | AB |
- * |     terminal      |        |          |    |
- * +-------------------+--------+----------+----+
+ * +--------+-------------------+----------+----+
+ * | folder |  files, browser   |   chat,  |    |
+ * |        +-------------------+ Sessions | AB |
+ * |        |     terminal      |          |    |
+ * +--------+-------------------+----------+----+
  * ```
  *
- * Any other panel or side bar position keeps the standard arrangement.
+ * Until 0.7.2 the chat was the secondary side bar, and this class moved it to the
+ * right of the terminal; the layout is now VS Code's own.
  */
-export class ForgeWorkbench extends Workbench {
-
-	private auxiliaryBarPlaced = false;
-
-	protected override createWorkbenchLayout(): void {
-		super.createWorkbenchLayout();
-
-		this.placeAuxiliaryBarAfterEditorColumn();
-	}
-
-	protected override adjustPartPositions(sideBarPosition: Position, panelAlignment: PanelAlignment, panelPosition: Position): void {
-		super.adjustPartPositions(sideBarPosition, panelAlignment, panelPosition);
-
-		// The base layout moves the secondary side bar back to the far left
-		this.auxiliaryBarPlaced = false;
-		this.placeAuxiliaryBarAfterEditorColumn();
-	}
-
-	private placeAuxiliaryBarAfterEditorColumn(): void {
-		if (
-			this.auxiliaryBarPlaced ||
-			this.getSideBarPosition() !== Position.RIGHT ||
-			!isHorizontal(this.getPanelPosition()) ||
-			this.getPanelAlignment() !== 'center'
-		) {
-			return;
-		}
-
-		// The middle row (title bar and banner come first) is then
-		// [secondary side bar, editor and panel, side bar, activity bar].
-		// Moving a view right counts the target index before the view is
-		// taken out, so index 2 puts it between the editor column and side bar.
-		this.workbenchGrid.moveViewTo(this.auxiliaryBarPartView, [2, 2]);
-
-		this.auxiliaryBarPlaced = true;
-	}
-}
+export class ForgeWorkbench extends Workbench { }

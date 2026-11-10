@@ -20,8 +20,8 @@ import product from '../../platform/product/common/product.js';
 import { Registry } from '../../platform/registry/common/platform.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../platform/storage/common/storage.js';
 import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../workbench/common/contributions.js';
-import { IViewContainersRegistry, ViewContainerLocation, Extensions as ViewExtensions } from '../../workbench/common/views.js';
-import { VIEWLET_ID as EXTENSIONS_VIEWLET_ID } from '../../workbench/contrib/extensions/common/extensions.js';
+import { IViewContainersRegistry, IViewDescriptorService, ViewContainerLocation, Extensions as ViewExtensions } from '../../workbench/common/views.js';
+import { ChatViewContainerId } from '../../workbench/contrib/chat/browser/chat.js';
 import { VIEWLET_ID as EXPLORER_VIEWLET_ID } from '../../workbench/contrib/files/common/files.js';
 import { IEditorGroupsService } from '../../workbench/services/editor/common/editorGroupsService.js';
 import { IEditorService } from '../../workbench/services/editor/common/editorService.js';
@@ -37,12 +37,13 @@ if (explorerViewContainer) {
 	viewContainersRegistry.deregisterViewContainer(explorerViewContainer);
 }
 
-// Defaults for the terminal-first layout, see `ForgeWorkbench`: the terminal
-// (panel) at the bottom, below the files, browser pages and Markdown previews
-// (editor, shown only while something is open), the chat (secondary side
-// bar) to their right, and the primary side bar (Extensions, Accounts) on the
-// far right next to a compact activity bar. The title bar has buttons to
-// toggle each part. The theme follows the Windows light or dark mode. Only the
+// Defaults for the terminal-first layout: the terminal (panel) at the bottom,
+// below the files, browser pages and Markdown previews (editor, shown only while
+// something is open); the folder panel (secondary side bar) on their left, opened
+// by the terminal's folder and file commands; the primary side bar on the right,
+// with the chat (moved there, see `ForgeChatInSideBarContribution`), Sessions and
+// Extensions, next to a compact activity bar. The title bar has buttons to toggle
+// each part. The theme follows the Windows light or dark mode. Only the
 // DuckDuckOps window loads this file.
 Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultConfigurations([{
 	overrides: {
@@ -51,7 +52,7 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'onboarding.enabled': false,
 		'workbench.panel.defaultLocation': 'bottom',
 		'workbench.sideBar.location': 'right',
-		'workbench.secondarySideBar.defaultVisibility': 'visible',
+		'workbench.secondarySideBar.defaultVisibility': 'hidden',
 		'workbench.activityBar.compact': true,
 		'workbench.layoutControl.enabled': true,
 		'workbench.layoutControl.type': 'toggles',
@@ -131,11 +132,49 @@ MenuRegistry.appendMenuItem(MenuId.TitleBar, {
 });
 
 /**
+ * The chat lives in the primary side bar, on the right with Sessions and
+ * Extensions, so the secondary side bar, on the left, is the folder panel's.
+ * The chat registers itself in the secondary side bar: it is moved once (a move
+ * the views service remembers, like one made by hand), and the secondary side
+ * bar it leaves is hidden until the folder panel opens.
+ */
+class ForgeChatInSideBarContribution extends Disposable implements IWorkbenchContribution {
+
+	static readonly ID = 'workbench.contrib.forgeChatInSideBar';
+	private static readonly MOVED_KEY = 'ddo.layout.chatInSideBar';
+
+	/** Moved in this window: the startup layout then shows the chat and hides the folder column */
+	static movedNow = false;
+
+	constructor(
+		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
+		@IStorageService storageService: IStorageService
+	) {
+		super();
+
+		if (storageService.getBoolean(ForgeChatInSideBarContribution.MOVED_KEY, StorageScope.PROFILE, false)) {
+			return;
+		}
+		const chat = viewDescriptorService.getViewContainerById(ChatViewContainerId);
+		if (!chat) {
+			return;
+		}
+		storageService.store(ForgeChatInSideBarContribution.MOVED_KEY, true, StorageScope.PROFILE, StorageTarget.MACHINE);
+		if (viewDescriptorService.getViewContainerLocation(chat) === ViewContainerLocation.AuxiliaryBar) {
+			viewDescriptorService.moveViewContainerToLocation(chat, ViewContainerLocation.Sidebar, 0, 'forge');
+		}
+		ForgeChatInSideBarContribution.movedNow = true;
+	}
+}
+
+registerWorkbenchContribution2(ForgeChatInSideBarContribution.ID, ForgeChatInSideBarContribution, WorkbenchPhase.BlockRestore);
+
+/**
  * Starts every window with the terminal and the primary side bar shown.
- * Showing the terminal panel creates a terminal when there is none. With the
- * Explorer removed the side bar has no default view, so it opens Extensions
- * unless a view is already restored there. Until 0.7.0 the terminal was above
- * the files: windows that remember that position move it to the bottom once.
+ * Showing the terminal panel creates a terminal when there is none. The side bar
+ * opens the chat unless a view is already restored there. Until 0.7.0 the
+ * terminal was above the files: windows that remember that position move it to
+ * the bottom once.
  */
 class ForgeStartupLayoutContribution extends Disposable implements IWorkbenchContribution {
 
@@ -156,8 +195,11 @@ class ForgeStartupLayoutContribution extends Disposable implements IWorkbenchCon
 			storageService.store(ForgeStartupLayoutContribution.PANEL_AT_BOTTOM_KEY, true, StorageScope.PROFILE, StorageTarget.MACHINE);
 		}
 		layoutService.setPartHidden(false, Parts.PANEL_PART);
-		if (!paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)) {
-			paneCompositeService.openPaneComposite(EXTENSIONS_VIEWLET_ID, ViewContainerLocation.Sidebar, false);
+		if (ForgeChatInSideBarContribution.movedNow || !paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)) {
+			paneCompositeService.openPaneComposite(ChatViewContainerId, ViewContainerLocation.Sidebar, false);
+		}
+		if (ForgeChatInSideBarContribution.movedNow) {
+			layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART);
 		}
 		layoutService.setPartHidden(false, Parts.SIDEBAR_PART);
 	}

@@ -8,24 +8,26 @@ Coding features are removed. Extensions can be installed from Open VSX, an inter
 VSIX files. Short name and command: `ddo`.
 
 ```
-+------------------------+-----------+------------+----+
-| files, logs, browser,  |           |            |    |
-| Markdown (while open)  |  Copilot  | Extensions | AB |
-+---------------+--------+   Chat    | (side bar) |    |
-|   terminal    | folder |           |            |    |
-+---------------+--------+-----------+------------+----+
++--------+------------------------+---------------+----+
+| folder | files, logs, browser,  |  Copilot Chat |    |
+| (opens | Markdown (while open)  |  (or Sessions,| AB |
+|  on ls,+------------------------+  Extensions)  |    |
+|  cd...)|        terminal        |  (side bar)   |    |
++--------+------------------------+---------------+----+
 ```
 
-- The folder panel next to the terminal
-  ([`forgeFolder.ts`](src/vs/forge/browser/forgeFolder.ts)) shows the folder the terminal is in.
+- The folder panel, the secondary side bar on the left
+  ([`forgeFolder.ts`](src/vs/forge/browser/forgeFolder.ts)), shows the folder the terminal is in.
+  It opens by itself on the terminal's folder and file commands (`ddo.folder.autoOpen`).
   It follows `cd` through shell integration, and every command: listing commands (`ls -la`,
   `Get-ChildItem -Force | Sort-Object LastWriteTime`, `dir /a /o:-d`, `ls *.log`) set how it shows
   the folder ([`forgeFolderCommands.ts`](src/vs/forge/common/forgeFolderCommands.ts) reads them),
   and after any command it marks what was added, changed or deleted, against the folder when the
   command started. It is a tree (an async data tree; folders open in place) with Name, Modified and
-  Size columns; double-clicking a folder runs `cd` in the terminal. It is a view of the terminal's
-  panel, shown as a card of its own: [`forgeFolder.css`](src/vs/forge/browser/media/forgeFolder.css)
-  makes the panel transparent and each of its two views a card when they sit side by side.
+  Size columns; double-clicking a folder runs `cd` in the terminal.
+- The chat is in the primary side bar, on the right with Sessions and Extensions: it registers itself
+  in the secondary side bar, and `ForgeChatInSideBarContribution`
+  ([`forge.contribution.ts`](src/vs/forge/browser/forge.contribution.ts)) moves it once.
 - The area above the terminal appears when a file, log or web page (also one Copilot opens) is
   opened, as tabs, and disappears when the last one is closed.
 - The parts are rounded cards (the "Modern UI" style) on a grey frame, with 8px gaps instead of VS
@@ -43,9 +45,9 @@ VSIX files. Short name and command: `ddo`.
 - Icons: Forge Icons, the default file icon theme, and the activity bar's icons come from
   [Phosphor](https://phosphoricons.com)'s two-tone icons (MIT, licence in
   [`extensions/ddo/icons`](extensions/ddo/icons)), built by [`build/ddo/forgeIcons.ts`](build/ddo/forgeIcons.ts).
-- The side bar on the right is open at startup on Extensions. Switch views (Extensions, Accounts,
-  Manage) from the compact activity bar, hide it with `Ctrl+B` or the toggle buttons in the title bar
-  (which also toggle the terminal and the chat).
+- The side bar on the right is open at startup on the chat. Switch views (Chat, Sessions,
+  Extensions, Accounts, Manage) from the compact activity bar, hide it with `Ctrl+B` or the toggle
+  buttons in the title bar (which also toggle the terminal and the folder panel).
 
 ## What is in, what is out
 

@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 // @ts-check
 'use strict';
 const vscode = require('vscode');
@@ -379,7 +383,6 @@ const tunnels = new Map();
 const logs = new Map();
 
 function stripAnsi(/** @type {string} */ s) {
-	// eslint-disable-next-line no-control-regex
 	return s.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)|\u001b\[[0-9;?]*[ -\/]*[@-~]|\u001b[@-Z\\-_]/g, '').replace(/\r\n?/g, '\n');
 }
 
@@ -875,12 +878,6 @@ function register(context) {
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
 		if (e.affectsConfiguration('ddo.sessions')) { tree.refresh(true); }
 	}));
-
-	// Show the sessions the first time
-	if (!context.globalState.get('sessionsShown')) {
-		context.globalState.update('sessionsShown', true);
-		vscode.commands.executeCommand('workbench.view.extension.ddo-sessions').then(undefined, () => { });
-	}
 
 	return {
 		/** Saves `ssh` commands typed in a terminal (shell integration) under Recent */

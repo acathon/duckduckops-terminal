@@ -511,6 +511,11 @@
           "default": "acathon/duckduckops-terminal",
           "description": "The GitHub repository (owner/name) whose releases the update check looks at."
         },
+        "ddo.folder.autoOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the folder panel, on the left, when the terminal does something with folders or files (cd, ls, dir, mkdir, rm, tar...). Closing the panel by hand stops it until the next window."
+        },
         "ddo.terminal.welcomeLines": {
           "type": "array",
           "uniqueItems": true,

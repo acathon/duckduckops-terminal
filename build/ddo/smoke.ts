@@ -50,7 +50,7 @@ try {
 
 	const expected: [string, string][] = [
 		['terminal', '.part.panel .terminal-wrapper'],
-		['chat', '.part.auxiliarybar .interactive-session'],
+		['chat in the side bar', '.part.sidebar .interactive-session'],
 	];
 	for (const [name, selector] of expected) {
 		checks[name] = await window.waitForSelector(selector, { state: 'visible', timeout: 60_000 }).then(() => true, () => false);
@@ -62,25 +62,27 @@ try {
 	activityBar = await window.$$eval('.part.activitybar .action-item .action-label', items => items.map(item => item.getAttribute('aria-label') ?? ''));
 	await window.screenshot({ path: path.join(outDir, 'desktop-terminal.png') });
 
-	// Terminal, then chat, then the side bar (Extensions) and the activity bar on the right
+	// Terminal, then the side bar with the chat, and the activity bar on the right
 	const box = async (selector: string) => (await window.$(selector))?.boundingBox() ?? null;
-	const [panel, chat, sideBar, activityBarBox] = await Promise.all([box('.part.panel'), box('.part.auxiliarybar'), box('.part.sidebar'), box('.part.activitybar')]);
+	const [panel, sideBar, activityBarBox] = await Promise.all([box('.part.panel'), box('.part.sidebar'), box('.part.activitybar')]);
 	const workbenchClasses = await window.$eval('.monaco-workbench', workbench => [...workbench.classList]);
-	checks['chat right of terminal'] = !!panel && !!chat && panel.x + panel.width <= chat.x + 1;
-	checks['side bar right of chat'] = !workbenchClasses.includes('nosidebar') && !!chat && !!sideBar && sideBar.x >= chat.x + chat.width - 1;
+	checks['side bar right of terminal'] = !workbenchClasses.includes('nosidebar') && !!panel && !!sideBar && sideBar.x >= panel.x + panel.width - 1;
 	checks['activity bar on the right'] = !!sideBar && !!activityBarBox && activityBarBox.x >= sideBar.x + sideBar.width - 1;
 	checks['sessions in the activity bar'] = activityBar.some(label => label.startsWith('Sessions'));
-	// The ddo extension opens Sessions on the first start: it shows that the extension activated
-	checks['ddo extension started (Sessions open)'] = await window.$eval('.part.sidebar .title-label', label => /sessions/i.test(label.textContent ?? '')).catch(() => false);
+	checks['folder panel hidden at startup'] = workbenchClasses.includes('noauxiliarybar');
 	checks['no file area while nothing is open'] = workbenchClasses.includes('nomaineditorarea');
 	checks['rounded parts'] = workbenchClasses.includes('modern-ui');
-	checks['duck on the chat page'] = await window.$eval('.part.auxiliarybar .chat-welcome-view-title', title => title.textContent === 'Ask the duck').catch(() => false);
-	// The folder panel, right of the terminal in the terminal's panel, listing its folder
-	const [terminalBox, folderBox] = await Promise.all([box('.part.panel .terminal-wrapper'), box('.part.panel .forge-folder')]);
-	checks['folder panel right of the terminal'] = !!terminalBox && !!folderBox && folderBox.x >= terminalBox.x + terminalBox.width - 1;
-	checks['folder panel lists files'] = await window.waitForSelector('.part.panel .forge-folder .forge-folder-row', { state: 'visible', timeout: 15_000 }).then(() => true, () => false);
+	checks['duck on the chat page'] = await window.$eval('.part.sidebar .chat-welcome-view-title', title => title.textContent === 'Ask the duck').catch(() => false);
+
+	// A listing in the terminal opens the folder panel, on the left, listing the terminal's folder
+	await window.click('.part.panel .terminal-wrapper');
+	await window.keyboard.type('ls');
+	await window.keyboard.press('Enter');
+	checks['folder panel opens on ls'] = await window.waitForSelector('.part.auxiliarybar .forge-folder .forge-folder-row', { state: 'visible', timeout: 20_000 }).then(() => true, () => false);
+	const [folderBox, panelBox] = await Promise.all([box('.part.auxiliarybar'), box('.part.panel')]);
+	checks['folder panel left of the terminal'] = !!folderBox && !!panelBox && folderBox.x + folderBox.width <= panelBox.x + 1;
 	// Names, not just rows: the details columns must leave them room
-	checks['folder panel shows names'] = await window.$$eval('.part.panel .forge-folder .forge-folder-row .label-name', names => names.some(name => {
+	checks['folder panel shows names'] = await window.$$eval('.part.auxiliarybar .forge-folder .forge-folder-row .label-name', names => names.some(name => {
 		const box = name.getBoundingClientRect();
 		return box.width >= 24 && !!name.textContent?.trim();
 	})).catch(() => false);
@@ -107,6 +109,10 @@ try {
 	// Let the terminal's size overlay fade after the resize
 	await window.waitForTimeout(3_000);
 	await window.screenshot({ path: path.join(outDir, 'desktop-file.png') });
+
+	// Sessions, from the activity bar: its buttons show once the ddo extension runs
+	await window.click('.part.activitybar .action-item .action-label[aria-label^="Sessions"]');
+	checks['ddo extension started (Sessions works)'] = await window.waitForSelector('.part.sidebar .welcome-view-content .monaco-button', { state: 'visible', timeout: 30_000 }).then(() => true, () => false);
 } finally {
 	await app.close().catch(() => undefined);
 }

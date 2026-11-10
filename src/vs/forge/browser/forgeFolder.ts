@@ -15,7 +15,7 @@ import { RunOnceScheduler } from '../../base/common/async.js';
 import { Codicon } from '../../base/common/codicons.js';
 import { fromNow } from '../../base/common/date.js';
 import { toErrorMessage } from '../../base/common/errorMessage.js';
-import { DisposableStore, MutableDisposable } from '../../base/common/lifecycle.js';
+import { Disposable, DisposableStore, MutableDisposable } from '../../base/common/lifecycle.js';
 import { Schemas } from '../../base/common/network.js';
 import { posix, win32 } from '../../base/common/path.js';
 import { isWindows } from '../../base/common/platform.js';
@@ -42,16 +42,18 @@ import { IThemeService } from '../../platform/theme/common/themeService.js';
 import { fillEditorsDragData } from '../../workbench/browser/dnd.js';
 import { IResourceLabel, ResourceLabels } from '../../workbench/browser/labels.js';
 import { IViewPaneOptions, ViewPane } from '../../workbench/browser/parts/views/viewPane.js';
-import { IViewContainersRegistry, IViewDescriptorService, IViewsRegistry, ViewContainer, Extensions as ViewExtensions } from '../../workbench/common/views.js';
+import { ViewPaneContainer } from '../../workbench/browser/parts/views/viewPaneContainer.js';
+import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../workbench/common/contributions.js';
+import { IViewContainersRegistry, IViewDescriptorService, IViewsRegistry, ViewContainerLocation, Extensions as ViewExtensions } from '../../workbench/common/views.js';
 import { ITerminalInstance, ITerminalService } from '../../workbench/contrib/terminal/browser/terminal.js';
-import { TERMINAL_VIEW_ID } from '../../workbench/contrib/terminal/common/terminal.js';
 import { ACTIVE_GROUP, IEditorService, SIDE_GROUP } from '../../workbench/services/editor/common/editorService.js';
 import { IViewsService } from '../../workbench/services/views/common/viewsService.js';
 import { defaultFolderListing, FolderShellKind, FolderSortKey, IFolderListing, interpretCommandLine, wildcardToRegExp } from '../common/forgeFolderCommands.js';
 
-// The folder panel: right of the terminal, in the terminal's own panel (shown as a
-// card of its own), it shows the folder the active terminal is in as a tree, with
-// sizes and dates in columns, and follows what the terminal does. A listing
+// The folder panel: the secondary side bar, a column left of the files and the
+// terminal; it opens by itself when the terminal does something with folders or
+// files. It shows the folder the active terminal is in as a tree, with sizes and
+// dates in columns, and follows what the terminal does. A listing
 // command (ls -la, dir /a, Get-ChildItem -Force | sort LastWriteTime...) sets how
 // it shows the folder; after any command it marks what was added, changed or
 // deleted, and the files the command named; a file watcher keeps it current while
@@ -68,6 +70,26 @@ const ShowsOtherFolderContext = new RawContextKey<boolean>('ddo.folderShowsOther
 const MAX_ROWS = 3000;
 
 const DETAILS_STORAGE_KEY = 'ddo.folder.details';
+const AUTO_OPEN_SETTING = 'ddo.folder.autoOpen';
+
+/** Each terminal's last listing command (ls -la...), for the panel opening after it */
+const lastListings = new Map<number, IFolderListing>();
+
+/** How a terminal's shell reads command lines */
+function folderShellKind(terminal: ITerminalInstance | undefined): FolderShellKind {
+	const type = terminal?.shellType;
+	if (type === 'pwsh') {
+		return 'powershell';
+	}
+	if (type === 'cmd') {
+		return 'cmd';
+	}
+	if (type) {
+		return 'posix';
+	}
+	const exe = (terminal?.shellLaunchConfig.executable ?? '').replace(/^.*[\\/]/, '').replace(/\.exe$/i, '').toLowerCase();
+	return /^(pwsh|powershell)$/.test(exe) ? 'powershell' : exe === 'cmd' ? 'cmd' : isWindows && !exe ? 'powershell' : 'posix';
+}
 
 /** Below this width (px) the details columns get short (15m, 2d, 12K) to keep room for the names */
 const COMPACT_WIDTH = 340;
@@ -346,8 +368,7 @@ export class ForgeFolderView extends ViewPane {
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
 		this.bodySize = { height, width };
-		// Next to the terminal the panel shows this view as a card of its own: the gap
-		// before it (forgeFolder.css) comes out of its width
+		// A margin the view's pane is given (a gap next to another view) comes out of its width
 		const gap = Number.parseFloat(dom.getWindow(this.element).getComputedStyle(this.element).marginLeft) || 0;
 		const treeWidth = Math.max(0, width - gap);
 		// The details stay, the names keep room: in a narrow card the columns get short
@@ -378,6 +399,12 @@ export class ForgeFolderView extends ViewPane {
 		this.summary = undefined;
 		this.lastCommandListed = false;
 		if (instance) {
+			// The panel may open just after a listing (ls -la): show the folder that way
+			const lastListing = lastListings.get(instance.instanceId);
+			if (lastListing) {
+				this.listing = lastListing;
+				this.listedPath = lastListing.path;
+			}
 			const capabilities = instance.capabilities;
 			const onCwd = (cwd: string) => {
 				if (!cwd || cwd === this.cwd) {
@@ -450,18 +477,7 @@ export class ForgeFolderView extends ViewPane {
 	// --- Where the folder is
 
 	private shellKind(): FolderShellKind {
-		const type = this.terminal?.shellType;
-		if (type === 'pwsh') {
-			return 'powershell';
-		}
-		if (type === 'cmd') {
-			return 'cmd';
-		}
-		if (type) {
-			return 'posix';
-		}
-		const exe = this.executableName();
-		return /^(pwsh|powershell)$/.test(exe) ? 'powershell' : exe === 'cmd' ? 'cmd' : isWindows && !exe ? 'powershell' : 'posix';
+		return folderShellKind(this.terminal);
 	}
 
 	private executableName(): string {
@@ -997,35 +1013,96 @@ export class ForgeFolderView extends ViewPane {
 	}
 }
 
-// --- The view, next to the terminal in the terminal's panel
+// --- The view: the secondary side bar, a column of its own left of the files and the
+// terminal (the primary side bar, with the chat, Sessions and Extensions, is on the right)
 
-function registerFolderView(container: ViewContainer): void {
-	Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews([{
-		id: FOLDER_VIEW_ID,
-		name: localize2('ddo.folder.name', "Folder"),
-		containerIcon: Codicon.folder,
-		ctorDescriptor: new SyncDescriptor(ForgeFolderView),
-		canToggleVisibility: true,
-		canMoveView: true,
-		// A third of the width next to the terminal (whose weight is the default, 20)
-		weight: 10,
-		// After the terminal, which has no order (sorted as Number.MAX_VALUE)
-		order: Number.POSITIVE_INFINITY,
-	}], container);
-}
+export const FOLDER_CONTAINER_ID = 'workbench.view.ddo.folder';
 
-const viewContainers = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry);
-const terminalContainer = viewContainers.get(TERMINAL_VIEW_ID);
-if (terminalContainer) {
-	registerFolderView(terminalContainer);
-} else {
-	const listener = viewContainers.onDidRegister(({ viewContainer }) => {
-		if (viewContainer.id === TERMINAL_VIEW_ID) {
-			listener.dispose();
-			registerFolderView(viewContainer);
+const folderContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
+	id: FOLDER_CONTAINER_ID,
+	title: localize2('ddo.folder.name', "Folder"),
+	icon: Codicon.folderOpened,
+	ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [FOLDER_CONTAINER_ID, { mergeViewWithContainerWhenSingleView: true }]),
+	storageId: FOLDER_CONTAINER_ID,
+	hideIfEmpty: true,
+	order: 0,
+}, ViewContainerLocation.AuxiliaryBar, { isDefault: true });
+
+Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews([{
+	id: FOLDER_VIEW_ID,
+	name: localize2('ddo.folder.name', "Folder"),
+	containerIcon: Codicon.folderOpened,
+	ctorDescriptor: new SyncDescriptor(ForgeFolderView),
+	canToggleVisibility: false,
+	canMoveView: true,
+}], folderContainer);
+
+/** Programs that make, delete, copy or move files: the folder panel opens for them */
+const fileCommand = /(^|[;&|(]\s*)(sudo\s+)?(mkdir|md|rmdir|rd|rm|del|erase|cp|copy|xcopy|robocopy|mv|move|ren|rename|touch|tar|unzip|zip|7z|gzip|gunzip|new-item|ni|remove-item|ri|copy-item|cpi|move-item|mi|rename-item|rni|expand-archive|compress-archive|git\s+(clone|checkout|switch|pull|reset|restore))(\.exe)?\b/i;
+
+/**
+ * Opens the folder panel when the active terminal does something with folders or
+ * files (cd, ls, dir, mkdir, rm, tar...), unless the panel was closed by hand in
+ * this window, or `ddo.folder.autoOpen` is off. It also keeps each terminal's
+ * last listing, so the panel opening after `ls -la` shows the folder that way.
+ */
+class ForgeFolderAutoOpenContribution extends Disposable implements IWorkbenchContribution {
+
+	static readonly ID = 'workbench.contrib.forgeFolderAutoOpen';
+
+	private readonly terminalStore = this._register(new DisposableStore());
+	/** Closed by hand: no more opening by itself in this window */
+	private closedByUser = false;
+	private opening = false;
+
+	constructor(
+		@ITerminalService terminalService: ITerminalService,
+		@IViewsService private readonly viewsService: IViewsService,
+		@IConfigurationService private readonly configurationService: IConfigurationService,
+	) {
+		super();
+		this._register(terminalService.onDidChangeActiveInstance(instance => this.bind(instance)));
+		this.bind(terminalService.activeInstance);
+		this._register(viewsService.onDidChangeViewVisibility(e => {
+			if (e.id === FOLDER_VIEW_ID && !this.opening) {
+				this.closedByUser = !e.visible;
+			}
+		}));
+	}
+
+	private bind(instance: ITerminalInstance | undefined): void {
+		this.terminalStore.clear();
+		if (!instance) {
+			return;
 		}
-	});
+		const bindCommands = (capability: ICommandDetectionCapability) => {
+			this.terminalStore.add(capability.onCommandFinished(command => this.onCommand(instance, command)));
+		};
+		const capability = instance.capabilities.get(TerminalCapability.CommandDetection);
+		if (capability) {
+			bindCommands(capability);
+		}
+		this.terminalStore.add(instance.capabilities.onDidAddCommandDetectionCapability(bindCommands));
+	}
+
+	private onCommand(instance: ITerminalInstance, command: ITerminalCommand): void {
+		const effect = interpretCommandLine(command.command, folderShellKind(instance));
+		if (effect.listing) {
+			lastListings.set(instance.instanceId, effect.listing);
+		}
+		const aboutFiles = !!effect.listing || effect.changesFolder || fileCommand.test(command.command);
+		if (!aboutFiles || this.closedByUser || this.viewsService.isViewVisible(FOLDER_VIEW_ID)
+			|| this.configurationService.getValue<boolean>(AUTO_OPEN_SETTING) === false) {
+			return;
+		}
+		this.opening = true;
+		this.viewsService.openView(FOLDER_VIEW_ID, false).finally(() => {
+			this.opening = false;
+		});
+	}
 }
+
+registerWorkbenchContribution2(ForgeFolderAutoOpenContribution.ID, ForgeFolderAutoOpenContribution, WorkbenchPhase.AfterRestored);
 
 // --- Title actions
 
