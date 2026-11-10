@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import './media/forge.css';
+import './media/forgeIcons.css';
 import './forgeDuo.js';
 import { mainWindow } from '../../base/browser/window.js';
 import { Codicon } from '../../base/common/codicons.js';
@@ -60,6 +61,9 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		'window.autoDetectColorScheme': true,
 		'workbench.preferredLightColorTheme': 'Forge Light',
 		'workbench.preferredDarkColorTheme': 'Forge Dark',
+		// Forge Icons from the `ddo` extension: Phosphor's duotone icons, one colour per
+		// kind of file (build/ddo/forgeIcons.ts)
+		'workbench.iconTheme': 'forge-icons',
 		// The Duck agents (Lead, Operator, Reviewer) that the `ddo` extension writes
 		// on first start, next to the usual agent folders
 		'chat.agentFilesLocations': {
