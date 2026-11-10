@@ -26,6 +26,7 @@ const commonResourcePatterns = [
 	'vs/workbench/browser/media/code-icon.svg',
 	'vs/workbench/browser/parts/editor/media/letterpress*.svg',
 	'vs/workbench/contrib/chat/browser/widget/media/chatPet/**/*.{gif,png}',
+	'vs/forge/browser/media/duckPet/*.png',
 	'vs/sessions/contrib/chat/browser/media/*.svg',
 	'vs/sessions/contrib/welcome/browser/media/themePreviews/*.svg'
 ];

@@ -303,6 +303,11 @@ export interface IProductConfiguration {
 		 * extension's CLI sessions). Without it the Agent Host is disabled.
 		 */
 		readonly copilotRuntime?: boolean;
+		/**
+		 * Folder (as a module path, like `vs/forge/browser/media/duckPet`) with the
+		 * chat pet's body sprites, under the same names and sizes as Buddy's.
+		 */
+		readonly petSprites?: string;
 	};
 	readonly chatParticipantRegistry?: string;
 	readonly chatSessionRecommendations?: IChatSessionRecommendation[];

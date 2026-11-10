@@ -111,3 +111,11 @@ These are enough for the duck to work. The other states fall back to these until
 Buddy can wear hats (accessories) and change colour. Hats are placed by points on Buddy's head, so
 they won't fit the duck: the duck has no hats in the first version. The colour change swaps Buddy's
 blue and green; the duck keeps its own colours.
+
+## Trying a concept sheet
+
+[`build/ddo/duckPetFromSheet.ps1`](../build/ddo/duckPetFromSheet.ps1) cuts the ducks out of a sheet
+(ducks on a transparent background) and writes the duck's sheets, with Buddy's names, sizes and
+frame counts, to `src/vs/forge/browser/media/duckPet`, which `forge.petSprites` in `product.json`
+points the pet to. Its `$frames` table says which duck of the sheet each frame shows. The first
+version of the duck comes from an AI concept sheet this way; frames drawn to this page replace it.

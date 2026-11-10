@@ -8,6 +8,13 @@
 	background-image: url('./duck-head.png');
 }
 
+/* The chat pet is the duck (product.json `forge.petSprites`): its eyes are in the
+ * sprites, so Buddy's eyes and the eye accessories drawn over them are hidden */
+.monaco-workbench .chat-pet-eyes,
+.monaco-workbench .chat-pet-eye-accessory {
+	display: none !important;
+}
+
 /* Wider gaps between the parts (8px instead of 4px), so they read as separate
  * cards on the frame. Keep in sync with `FORGE_FLOATING_PANEL_MARGIN` in
  * `src/vs/workbench/services/layout/browser/layoutService.ts`. */

@@ -17,13 +17,14 @@ import { RunOnceScheduler } from '../../../../../base/common/async.js';
 import { Emitter, Event } from '../../../../../base/common/event.js';
 import { KeyCode, KeyMod } from '../../../../../base/common/keyCodes.js';
 import { Disposable, DisposableStore, IDisposable, MutableDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { FileAccess } from '../../../../../base/common/network.js';
+import { AppResourcePath, FileAccess } from '../../../../../base/common/network.js';
 import { autorun, derived, IObservable, ISettableObservable, observableFromEvent, observableSignalFromEvent, observableValue, transaction } from '../../../../../base/common/observable.js';
 import { localize } from '../../../../../nls.js';
 import { IAccessibilityService } from '../../../../../platform/accessibility/common/accessibility.js';
 import { ICommandService } from '../../../../../platform/commands/common/commands.js';
 import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
 import { ILogService } from '../../../../../platform/log/common/log.js';
+import product from '../../../../../platform/product/common/product.js';
 import { IHostService } from '../../../../services/host/browser/host.js';
 import { IChatModel } from '../../common/model/chatModel.js';
 import { CHAT_PET_OPEN_ACHIEVEMENTS_COMMAND_ID, ChatPetAccessoryId, getChatPetAccessory, getChatPetAchievement } from '../chatPetAchievements.js';
@@ -407,7 +408,8 @@ export function getChatPetFrameDurations(state: ChatPetState): readonly number[]
 }
 
 function createSpriteSources(name: string, state: ChatPetState, tracksCursor = true, sourceWidth?: number, sourceHeight = CHAT_PET_SOURCE_SIZE, fixedOrientationDecorations?: readonly IChatPetFixedOrientationDecoration[]): ChatPetSpriteSources {
-	const root = 'vs/workbench/contrib/chat/browser/widget/media/chatPet';
+	// DuckDuckOps puts its duck in Buddy's place: same file names, sizes and frames
+	const root = (product.forge?.petSprites as AppResourcePath | undefined) ?? 'vs/workbench/contrib/chat/browser/widget/media/chatPet';
 	const suffix = tracksCursor ? '-tracking-96' : `-${sourceHeight}`;
 	const frameDurations = getChatPetFrameDurations(state);
 	const coalesceIdleFrames = state === 'idle' || state === 'rendering' || state === 'achievementUnlocked';
