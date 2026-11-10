@@ -13,6 +13,7 @@ const shell = require('./shell');
 const update = require('./update');
 const opsExtensions = require('./opsExtensions');
 const themes = require('./themes');
+const recorder = require('./recorder');
 
 const cfg = () => vscode.workspace.getConfiguration('ddo');
 const LOG_RE = /\.(log|txt|out|err)(\.\d+)?$/i;
@@ -276,6 +277,7 @@ function activate(context) {
 	reg('ddo.recommendedExtensions', () => opsExtensions.showRecommendedExtensions());
 	reg('ddo.checkForUpdates', () => update.checkForUpdates(context, true));
 	reg('ddo.chooseTheme', () => themes.chooseTheme());
+	recorder.register(context);
 	const askDuck = (/** @type {string} */ query) => vscode.commands.executeCommand('workbench.action.chat.open', { query, isPartialQuery: false });
 	reg('ddo.askAboutFailure', async () => {
 		if (!lastFailure) { return; }

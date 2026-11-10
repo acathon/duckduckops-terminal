@@ -22,7 +22,8 @@
   ],
   "enabledApiProposals": [
     "terminalDataWriteEvent",
-    "terminalSelection"
+    "terminalSelection",
+    "terminalDimensions"
   ],
   "capabilities": {
     "virtualWorkspaces": false,
@@ -201,6 +202,24 @@
         "command": "ddo.saveSummary",
         "title": "Open Summary as Markdown",
         "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.terminal.startRecording",
+        "title": "Record Terminal",
+        "category": "DuckDuckOps",
+        "icon": "$(record)"
+      },
+      {
+        "command": "ddo.terminal.stopRecording",
+        "title": "Stop Recording and Save",
+        "category": "DuckDuckOps",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "ddo.terminal.playRecording",
+        "title": "Play Terminal Recording...",
+        "category": "DuckDuckOps",
+        "icon": "$(play)"
       }
     ],
     "keybindings": [
@@ -519,6 +538,11 @@
           "type": "string",
           "default": "",
           "markdownDescription": "The city for the weather line, for example `Paris` or `Lyon, France`. Empty: [wttr.in](https://wttr.in) guesses it from your network address."
+        },
+        "ddo.terminal.recordingsFolder": {
+          "type": "string",
+          "default": "",
+          "description": "Where terminal recordings (.cast) are saved. Empty: .ddo\\recordings in your user folder."
         }
       }
     },
@@ -620,6 +644,16 @@
           "command": "ddo.sessions.openLogs",
           "when": "view == ddo.sessions",
           "group": "1_files@2"
+        },
+        {
+          "command": "ddo.terminal.startRecording",
+          "when": "view == terminal && !ddo.terminalRecording",
+          "group": "navigation@50"
+        },
+        {
+          "command": "ddo.terminal.stopRecording",
+          "when": "view == terminal && ddo.terminalRecording",
+          "group": "navigation@50"
         }
       ],
       "view/item/context": [
@@ -705,6 +739,10 @@
         {
           "command": "ddo.saveSummary",
           "when": "false"
+        },
+        {
+          "command": "ddo.terminal.stopRecording",
+          "when": "ddo.terminalRecording"
         }
       ],
       "terminal/context": [
@@ -712,6 +750,35 @@
           "command": "ddo.askAboutTerminalSelection",
           "when": "terminalTextSelected",
           "group": "0_ddo@1"
+        },
+        {
+          "command": "ddo.terminal.startRecording",
+          "when": "!ddo.terminalRecording",
+          "group": "0_ddo@2"
+        },
+        {
+          "command": "ddo.terminal.stopRecording",
+          "when": "ddo.terminalRecording",
+          "group": "0_ddo@2"
+        }
+      ],
+      "terminal/title/context": [
+        {
+          "command": "ddo.terminal.startRecording",
+          "when": "!ddo.terminalRecording",
+          "group": "0_ddo@1"
+        },
+        {
+          "command": "ddo.terminal.stopRecording",
+          "when": "ddo.terminalRecording",
+          "group": "0_ddo@1"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "ddo.terminal.playRecording",
+          "when": "resourceExtname == .cast",
+          "group": "navigation"
         }
       ]
     },
