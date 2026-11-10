@@ -14,6 +14,7 @@ import { AutoOpenBarrier, Promises, disposableTimeout, timeout } from '../../../
 import { Codicon } from '../../../../base/common/codicons.js';
 import { debounce } from '../../../../base/common/decorators.js';
 import { BugIndicatingError, onUnexpectedError } from '../../../../base/common/errors.js';
+import { Color, HSLA } from '../../../../base/common/color.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';
 import { ISeparator, normalizeDriveLetter, template, tildify } from '../../../../base/common/labels.js';
@@ -423,6 +424,13 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		delete this._shellLaunchConfig[remoteResolverTerminal];
 		this._wrapperElement = document.createElement('div');
 		this._wrapperElement.classList.add('terminal-wrapper');
+		// DuckDuckOps sessions set a colour (a hue in DDO_TERMINAL_TINT) shown as a border
+		// around the terminal, or as a tint of its background (TerminalInstanceColorProvider)
+		const sessionHue = Number(this._shellLaunchConfig.env?.DDO_TERMINAL_TINT || NaN);
+		if (Number.isFinite(sessionHue) && this._shellLaunchConfig.env?.DDO_TERMINAL_TINT_STYLE !== 'background') {
+			this._wrapperElement.classList.add('session-color');
+			this._wrapperElement.style.setProperty('--terminal-session-color', `hsl(${sessionHue % 360}, 65%, 50%)`);
+		}
 
 		this._widgetManager = this._register(instantiationService.createInstance(TerminalWidgetManager));
 
@@ -831,7 +839,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		const xterm = this._scopedInstantiationService.createInstance(XtermTerminal, this._resource, Terminal, {
 			cols: this._cols,
 			rows: this._rows,
-			xtermColorProvider: this._scopedInstantiationService.createInstance(TerminalInstanceColorProvider, this._targetRef),
+			xtermColorProvider: this._scopedInstantiationService.createInstance(TerminalInstanceColorProvider, this._targetRef, () => this._shellLaunchConfig.env?.DDO_TERMINAL_TINT_STYLE === 'background' ? this._shellLaunchConfig.env.DDO_TERMINAL_TINT ?? undefined : undefined),
 			capabilities: this.capabilities,
 			shellIntegrationNonce: this._processManager.shellIntegrationNonce,
 			disableShellIntegrationReporting,
@@ -2970,11 +2978,23 @@ export function parseExitResult(
 export class TerminalInstanceColorProvider implements IXtermColorProvider {
 	constructor(
 		private readonly _target: IReference<TerminalLocation | undefined>,
+		/** Hue (0-359) that tints this terminal's background, from `DDO_TERMINAL_TINT` in its environment (DuckDuckOps sessions) */
+		private readonly _tint: () => string | undefined,
 		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
 	) {
 	}
 
 	getBackgroundColor(theme: IColorTheme) {
+		const background = this._getThemeBackgroundColor(theme);
+		const hue = Number(this._tint());
+		if (!background || !this._tint() || !Number.isFinite(hue)) {
+			return background;
+		}
+		// A light wash of the session's colour, so text keeps the theme's contrast
+		return new Color(new HSLA(hue % 360, 0.65, 0.5, background.isDarker() ? 0.14 : 0.1)).makeOpaque(background);
+	}
+
+	private _getThemeBackgroundColor(theme: IColorTheme) {
 		const terminalBackground = theme.getColor(TERMINAL_BACKGROUND_COLOR);
 		if (terminalBackground) {
 			return terminalBackground;

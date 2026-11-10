@@ -1110,6 +1110,7 @@
 		"--editor-group-tabs-height",
 		"--testMessageDecorationFontFamily",
 		"--testMessageDecorationFontSize",
+		"--terminal-session-color",
 		"--title-border-bottom-color",
 		"--title-border-bottom-width",
 		"--title-wco-width",

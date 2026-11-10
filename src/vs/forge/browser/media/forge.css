@@ -29,3 +29,19 @@
 .monaco-workbench.floating-panels:not(.modern-ui-compact) .part.activitybar.right {
 	margin-left: var(--modern-ui-floating-card-margin);
 }
+
+/* The colour of a session terminal (SSH, tunnel), as a border drawn over it.
+ * Set by TerminalInstance from DDO_TERMINAL_TINT. */
+.monaco-workbench .terminal-wrapper.session-color {
+	position: relative;
+}
+
+.monaco-workbench .terminal-wrapper.session-color::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border: 2px solid var(--terminal-session-color);
+	border-radius: var(--vscode-cornerRadius-medium, 6px);
+	pointer-events: none;
+	z-index: 40;
+}
