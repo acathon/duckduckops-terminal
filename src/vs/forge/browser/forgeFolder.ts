@@ -835,7 +835,8 @@ function registerFolderView(container: ViewContainer): void {
 		canMoveView: true,
 		// A third of the width next to the terminal (whose weight is the default, 20)
 		weight: 10,
-		order: 10,
+		// After the terminal, which has no order (sorted as Number.MAX_VALUE)
+		order: Number.POSITIVE_INFINITY,
 	}], container);
 }
 

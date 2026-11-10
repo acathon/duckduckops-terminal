@@ -8,16 +8,16 @@ import { isHorizontal, PanelAlignment, Position } from '../../workbench/services
 
 /**
  * The DuckDuckOps workbench: the standard workbench parts in a terminal-first
- * arrangement. With the panel (terminal) above the editor (files and browser
- * pages) and the primary side bar on the right, the standard layout puts the
- * secondary side bar (chat) on the left. This workbench keeps it to the right of
- * the terminal instead, between the terminal and the primary side bar:
+ * arrangement. With the panel (terminal) below or above the editor (files and
+ * browser pages) and the primary side bar on the right, the standard layout puts
+ * the secondary side bar (chat) on the left. This workbench keeps it to the right
+ * of the terminal instead, between the terminal and the primary side bar:
  *
  * ```
  * +-------------------+--------+----------+----+
- * |     terminal      |        |          |    |
- * +-------------------+  chat  | side bar | AB |
  * |  files, browser   |        |          |    |
+ * +-------------------+  chat  | side bar | AB |
+ * |     terminal      |        |          |    |
  * +-------------------+--------+----------+----+
  * ```
  *

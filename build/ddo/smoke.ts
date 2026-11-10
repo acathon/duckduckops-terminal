@@ -132,5 +132,11 @@ fs.writeFileSync(path.join(outDir, 'summary.json'), JSON.stringify(summary, unde
 console.log(JSON.stringify(summary, undefined, '\t'));
 
 if (Object.values(checks).some(ok => !ok)) {
+	// As GitHub annotations too: the API shows them without signing in
+	for (const [name, ok] of Object.entries(checks)) {
+		if (!ok) {
+			console.log(`::error title=Smoke test::${name} failed`);
+		}
+	}
 	process.exit(1);
 }
