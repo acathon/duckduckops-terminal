@@ -70,6 +70,8 @@ try {
 	checks['side bar right of chat'] = !workbenchClasses.includes('nosidebar') && !!chat && !!sideBar && sideBar.x >= chat.x + chat.width - 1;
 	checks['activity bar on the right'] = !!sideBar && !!activityBarBox && activityBarBox.x >= sideBar.x + sideBar.width - 1;
 	checks['sessions in the activity bar'] = activityBar.some(label => label.startsWith('Sessions'));
+	// The ddo extension opens Sessions on the first start: it shows that the extension activated
+	checks['ddo extension started (Sessions open)'] = await window.$eval('.part.sidebar .title-label', label => /sessions/i.test(label.textContent ?? '')).catch(() => false);
 	checks['no file area while nothing is open'] = workbenchClasses.includes('nomaineditorarea');
 	checks['rounded parts'] = workbenchClasses.includes('modern-ui');
 	checks['duck on the chat page'] = await window.$eval('.part.auxiliarybar .chat-welcome-view-title', title => title.textContent === 'Ask the duck').catch(() => false);
