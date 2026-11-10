@@ -13,11 +13,12 @@ Your servers in a list, like in MobaXterm: one click opens SSH, a tunnel or Remo
 | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.5.0/desktop-terminal.png?raw=true" width="420" alt="The Sessions list in the right side bar, next to the terminal and the chat"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.5.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal"> |
 
 ### New
-- **Sessions**, in the right side bar: SSH, SSH tunnels, Remote Desktop and local shells, in folders. Click one to connect. The hosts of your `~/.ssh/config` are listed too.
+- **Sessions**, in the right side bar: SSH, SSH tunnels, Remote Desktop and local shells, in folders. Click one to connect.
+- **Your MobaXterm and PuTTY sessions are listed automatically**, with their folders, next to the hosts of your `~/.ssh/config`. They are read live, so changes made in MobaXterm or PuTTY show up; **Copy to My Sessions** makes one editable in DuckDuckOps.
 - **SSH the way ops needs it**: jump host, SOCKS5 or HTTP proxy, port forwarding (local, remote, SOCKS), key file, keep-alive and a start folder, with Windows' own OpenSSH client.
 - **Tunnels** start and stop from the list; the icon turns green while one runs.
 - **Every connection is saved.** Quick Connect and `ssh` commands typed in a terminal land under **Recent** (the last 20).
-- **Import from MobaXterm** (`MobaXterm.ini` or exported `.mxtsessions`: SSH and Remote Desktop) **and PuTTY** (SSH, with proxy and port forwarding).
+- **Import from MobaXterm** (`MobaXterm.ini` or exported `.mxtsessions`: SSH and Remote Desktop) **and PuTTY** (SSH, with proxy and port forwarding), to keep them in DuckDuckOps for good.
 - **Each session has a colour**: a border around its terminal, its tab and its icon. New sessions get one at random; production sessions are always red. `ddo.sessions.colorStyle` switches to a tinted background, or off.
 - **Session logs**: a session can save its output to a file (`ddo.sessions.logOutput`, or per session).
 - **Team sessions**: read-only session files, for example on a network share (`ddo.sessions.teamFiles`).
@@ -34,7 +35,7 @@ Your servers in a list, like in MobaXterm: one click opens SSH, a tunnel or Remo
 - Sessions are kept in `.ddo\sessions.json` in your user folder. **Edit Session** opens it at the session, with completion and checks.
 
 ### After updating
-- Sessions opens in the right side bar on the first start. Use **Import** to bring your MobaXterm or PuTTY sessions.
+- Sessions opens in the right side bar on the first start, with your MobaXterm and PuTTY sessions if you have any. A portable MobaXterm needs its `MobaXterm.ini` in `ddo.sessions.mobaXtermFile`; `ddo.sessions.listFrom` chooses which are listed.
 - If you chose a default terminal profile yourself, it is kept.
 
 ## [0.4.1] - Ready for managed devices

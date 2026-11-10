@@ -175,6 +175,11 @@
         "command": "ddo.checkForUpdates",
         "title": "Check for Updates...",
         "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.sessions.copyToSaved",
+        "title": "Copy to My Sessions",
+        "category": "DuckDuckOps"
       }
     ],
     "keybindings": [
@@ -347,6 +352,33 @@
           "default": [],
           "markdownDescription": "Read-only session files shared by a team (for example on a network share), each shown as a group in the Sessions list. Same format as `ddo.sessions.file`."
         },
+        "ddo.sessions.listFrom": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "sshconfig",
+              "mobaxterm",
+              "putty"
+            ],
+            "enumDescriptions": [
+              "Hosts of ~/.ssh/config",
+              "Sessions of MobaXterm (MobaXterm.ini)",
+              "Saved sessions of PuTTY"
+            ]
+          },
+          "default": [
+            "sshconfig",
+            "mobaxterm",
+            "putty"
+          ],
+          "uniqueItems": true,
+          "description": "Where else sessions are listed from, live and read-only, next to your own sessions."
+        },
+        "ddo.sessions.mobaXtermFile": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "MobaXterm's settings file (`MobaXterm.ini`), for example of a portable MobaXterm. Empty: the file of the installed MobaXterm, if there is one."
+        },
         "ddo.sessions.sshPath": {
           "type": "string",
           "default": "",
@@ -363,21 +395,21 @@
           "description": "Folder for session log files, one sub folder per session."
         },
         "ddo.sessions.colorStyle": {
-        "type": "string",
-        "enum": [
-          "border",
-          "background",
-          "none"
-        ],
-        "enumDescriptions": [
-          "A border in the session's colour around its terminal.",
-          "The terminal's background tinted with the session's colour.",
-          "Only the terminal tab icon has the session's colour."
-        ],
-        "default": "border",
-        "description": "How a session terminal shows the session's colour (random for new sessions, red for production)."
-      },
-      "ddo.sessions.rememberTypedSsh": {
+          "type": "string",
+          "enum": [
+            "border",
+            "background",
+            "none"
+          ],
+          "enumDescriptions": [
+            "A border in the session's colour around its terminal.",
+            "The terminal's background tinted with the session's colour.",
+            "Only the terminal tab icon has the session's colour."
+          ],
+          "default": "border",
+          "description": "How a session terminal shows the session's colour (random for new sessions, red for production)."
+        },
+        "ddo.sessions.rememberTypedSsh": {
           "type": "boolean",
           "default": true,
           "description": "Save ssh commands typed in a terminal as sessions under Recent."
@@ -553,6 +585,11 @@
           "command": "ddo.sessions.delete",
           "when": "view == ddo.sessions && viewItem =~ /^session\\./ && viewItem =~ /^(?!.*readonly)/",
           "group": "4_delete@1"
+        },
+        {
+          "command": "ddo.sessions.copyToSaved",
+          "when": "view == ddo.sessions && viewItem =~ /^session\\..*readonly/",
+          "group": "3_edit@1"
         }
       ],
       "commandPalette": [
@@ -578,6 +615,10 @@
         },
         {
           "command": "ddo.sessions.delete",
+          "when": "false"
+        },
+        {
+          "command": "ddo.sessions.copyToSaved",
           "when": "false"
         }
       ]

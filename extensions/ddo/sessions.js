@@ -126,6 +126,32 @@ function sshConfigSessions() {
 	}));
 }
 
+/** MobaXterm's settings file: `ddo.sessions.mobaXtermFile`, or where the installed version keeps it */
+function mobaXtermFile() {
+	const configured = cfg().get('mobaXtermFile', '');
+	if (configured) { return expandHome(configured); }
+	return [
+		path.join(process.env.APPDATA || '', 'MobaXterm', 'MobaXterm.ini'),
+		path.join(os.homedir(), 'Documents', 'MobaXterm', 'MobaXterm.ini'),
+	].find(file => fs.existsSync(file));
+}
+
+/** Sessions listed live from MobaXterm and PuTTY, as they are there (read-only) */
+function externalSessions(/** @type {'mobaxterm' | 'putty'} */ source) {
+	let found = { sessions: /** @type {Omit<Session, 'id'>[]} */ ([]), skipped: 0 };
+	if (source === 'mobaxterm') {
+		const file = mobaXtermFile();
+		found = file ? parseMobaXterm(fs.readFileSync(file, 'latin1')) : found;
+	} else if (process.platform === 'win32') {
+		found = readPutty();
+	}
+	const top = source === 'mobaxterm' ? 'MobaXterm' : 'PuTTY';
+	return found.sessions.map(s => {
+		const folder = (s.folder ?? '').replace(new RegExp(`^${top}/?`), '');
+		return /** @type {Session} */ ({ ...s, folder: folder || undefined, id: `${source}:${folder}/${s.name}` });
+	});
+}
+
 /** @returns {{ label: string, file: string, sessions: Session[], error?: string }[]} */
 function teamFiles() {
 	return cfg().get('teamFiles', []).map((/** @type {string} */ entry) => {
@@ -418,7 +444,8 @@ async function connect(s) {
 		}
 		openTerminal(s, { shellPath: sshPath(), shellArgs: sshArgs(s), env: proxyEnv(s) });
 	}
-	if (!s.id.startsWith('sshconfig:') && !s.id.startsWith('team:')) {
+	// Saved sessions have a plain id; listed ones (`sshconfig:`, `mobaxterm:`, `putty:`, `team:`) a prefix
+	if (!s.id.includes(':')) {
 		updateStore(sessions => {
 			const saved = sessions.find(x => x.id === s.id);
 			if (saved) { saved.lastUsed = Date.now(); }
@@ -439,9 +466,13 @@ class SessionsTree {
 		this.sources = new Map();
 		/** @type {Map<string, string>} */
 		this.errors = new Map();
+		/** MobaXterm and PuTTY sessions, read again on Refresh (MobaXterm also when its file changes) */
+		/** @type {Map<string, { sessions: Session[], stamp?: number, error?: string }>} */
+		this.external = new Map();
 	}
 
-	refresh() {
+	/** @param {boolean} [full] also read MobaXterm and PuTTY again */
+	refresh(full = false) {
 		this.sources.clear();
 		this.errors.clear();
 		try {
@@ -450,7 +481,26 @@ class SessionsTree {
 			this.sources.set(SAVED, []);
 			this.errors.set(SAVED, `${sessionsFile()}: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		this.sources.set(SSH_CONFIG, sshConfigSessions());
+		const listFrom = cfg().get('listFrom', ['sshconfig', 'mobaxterm', 'putty']);
+		if (listFrom.includes('sshconfig')) {
+			this.sources.set(SSH_CONFIG, sshConfigSessions());
+		}
+		for (const source of /** @type {const} */ (['mobaxterm', 'putty'])) {
+			if (!listFrom.includes(source)) { continue; }
+			const file = source === 'mobaxterm' ? mobaXtermFile() : undefined;
+			const stamp = file ? fs.statSync(file).mtimeMs : undefined;
+			const cached = this.external.get(source);
+			if (full || !cached || cached.stamp !== stamp) {
+				try {
+					this.external.set(source, { sessions: externalSessions(source), stamp });
+				} catch (error) {
+					this.external.set(source, { sessions: [], stamp, error: error instanceof Error ? error.message : String(error) });
+				}
+			}
+			const entry = this.external.get(source);
+			this.sources.set(source, entry?.sessions ?? []);
+			if (entry?.error) { this.errors.set(source, entry.error); }
+		}
 		for (const team of teamFiles()) {
 			const source = `team:${team.file}`;
 			this.sources.set(source, team.sessions.map(s => ({ ...s, id: `team:${team.file}:${s.id}` })));
@@ -467,9 +517,15 @@ class SessionsTree {
 	/** @param {Node} node */
 	getTreeItem(node) {
 		if (node.kind === 'folder') {
-			const item = new vscode.TreeItem(node.label, node.folder === RECENT && node.source === SAVED ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded);
+			const collapsed = (node.folder === RECENT && node.source === SAVED) || (node.folder === '' && (node.source === 'mobaxterm' || node.source === 'putty'));
+			const item = new vscode.TreeItem(node.label, collapsed ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.Expanded);
 			item.id = `${node.source}|${node.folder}`;
-			item.iconPath = new vscode.ThemeIcon(node.source === SSH_CONFIG ? 'gear' : node.source.startsWith('team:') ? 'organization' : node.folder === RECENT ? 'history' : 'folder');
+			const top = node.folder === '';
+			item.iconPath = new vscode.ThemeIcon(
+				top && node.source === SSH_CONFIG ? 'gear'
+					: top && (node.source === 'mobaxterm' || node.source === 'putty') ? 'folder-library'
+						: top && node.source.startsWith('team:') ? 'organization'
+							: node.folder === RECENT ? 'history' : 'folder');
 			item.contextValue = 'folder';
 			const error = node.folder === '' ? this.errors.get(node.source) : undefined;
 			if (error) { item.description = 'could not be read'; item.tooltip = error; }
@@ -501,7 +557,9 @@ class SessionsTree {
 		if (!node) {
 			/** @type {Node[]} */
 			const roots = this.childrenOf(SAVED, '');
-			if (this.sources.get(SSH_CONFIG)?.length) { roots.push({ kind: 'folder', folder: '', source: SSH_CONFIG, label: 'SSH config' }); }
+			for (const [source, label] of [[SSH_CONFIG, 'SSH config'], ['mobaxterm', 'MobaXterm'], ['putty', 'PuTTY']]) {
+				if (this.sources.get(source)?.length || this.errors.has(source)) { roots.push({ kind: 'folder', folder: '', source, label }); }
+			}
 			for (const source of this.sources.keys()) {
 				if (source.startsWith('team:')) { roots.push({ kind: 'folder', folder: '', source, label: path.basename(source.slice(5), '.json') }); }
 			}
@@ -738,7 +796,17 @@ function register(context) {
 	const sessionOf = node => node?.kind === 'session' ? node.session : undefined;
 	const reg = (/** @type {string} */ id, /** @type {(...args: any[]) => any} */ fn) => context.subscriptions.push(vscode.commands.registerCommand(id, fn));
 
-	reg('ddo.sessions.refresh', () => tree.refresh());
+	reg('ddo.sessions.refresh', () => tree.refresh(true));
+	reg('ddo.sessions.copyToSaved', (/** @type {Node} */ node) => {
+		const s = sessionOf(node);
+		if (!s || node.kind !== 'session') { return; }
+		const from = { [SSH_CONFIG]: 'SSH config', mobaxterm: 'MobaXterm', putty: 'PuTTY' }[node.source] ?? 'Team';
+		/** @type {Session} */
+		const copy = { ...s, id: crypto.randomUUID(), folder: [from, s.folder].filter(Boolean).join('/'), color: colorOf(s), description: undefined };
+		updateStore(sessions => sessions.push(copy));
+		tree.refresh();
+		vscode.window.setStatusBarMessage(`"${s.name}" copied to your sessions`, 3000);
+	});
 	reg('ddo.sessions.connect', (/** @type {Node} */ node) => { const s = sessionOf(node); if (s) { connect(s).then(() => tree.refresh()); } });
 	reg('ddo.sessions.stopTunnel', (/** @type {Node} */ node) => { const s = sessionOf(node); if (s) { tunnels.get(s.id)?.dispose(); } });
 	reg('ddo.sessions.new', () => newSession(tree));
@@ -805,7 +873,7 @@ function register(context) {
 		if (path.resolve(document.uri.fsPath) === path.resolve(sessionsFile())) { tree.refresh(); }
 	}));
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-		if (e.affectsConfiguration('ddo.sessions')) { tree.refresh(); }
+		if (e.affectsConfiguration('ddo.sessions')) { tree.refresh(true); }
 	}));
 
 	// Show the sessions the first time

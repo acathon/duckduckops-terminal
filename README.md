@@ -132,9 +132,10 @@ Three Copilot custom agents work on an ops task together, each on its own model:
 ## Sessions
 
 The Sessions view in the right side bar ([`extensions/ddo/sessions.js`](extensions/ddo/sessions.js)) lists
-saved sessions in folders, the hosts of `~/.ssh/config` and read-only team files
-(`ddo.sessions.teamFiles`). Sessions are kept in `~/.ddo/sessions.json`
-([schema](extensions/ddo/schemas/sessions.schema.json)).
+saved sessions in folders, and, live and read-only, the hosts of `~/.ssh/config`, the sessions of
+MobaXterm (`MobaXterm.ini`, or `ddo.sessions.mobaXtermFile`) and PuTTY (registry), chosen with
+`ddo.sessions.listFrom`, and team files (`ddo.sessions.teamFiles`). Saved sessions are kept in
+`~/.ddo/sessions.json` ([schema](extensions/ddo/schemas/sessions.schema.json)).
 
 | Type | Opens |
 |---|---|
@@ -144,7 +145,8 @@ saved sessions in folders, the hosts of `~/.ssh/config` and read-only team files
 | `shell` | A local shell (WSL distribution, PowerShell, Command Prompt) |
 
 - Quick Connect and `ssh` commands typed in a terminal (shell integration) are saved under Recent.
-- Import from MobaXterm (`[Bookmarks]` of `MobaXterm.ini` / `.mxtsessions`) and PuTTY (registry).
+- MobaXterm sessions are read from the `[Bookmarks]` sections (SSH and Remote Desktop). Import, or
+  Copy to My Sessions, copies listed sessions into `sessions.json`.
 - A session's colour reaches the terminal through `DDO_TERMINAL_TINT` (a hue) in its environment:
   `TerminalInstance` draws a border in that colour ([`forge.css`](src/vs/forge/browser/media/forge.css))
   or tints the background (`TerminalInstanceColorProvider`).
