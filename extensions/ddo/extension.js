@@ -33,10 +33,16 @@ function append(terminal, chunk) {
 	b.text = (b.text + chunk).slice(-max);
 }
 
-function recentTerminalOutput() {
-	const t = vscode.window.activeTerminal ?? vscode.window.terminals[0];
+/** The terminal a question was asked about (Ask the Duck), for the next chat request */
+/** @type {vscode.Terminal | undefined} */
+let askedTerminal;
+
+function recentTerminalOutput(limitFactor = 1) {
+	const t = askedTerminal ?? vscode.window.activeTerminal ?? vscode.window.terminals[0];
+	askedTerminal = undefined;
 	if (!t) { return ''; }
-	const limit = cfg().get('chat.terminalContextChars', 8000);
+	// The buffer keeps 3 times the limit, which /summary uses all of
+	const limit = cfg().get('chat.terminalContextChars', 8000) * limitFactor;
 	return buffers.get(t)?.text.slice(-limit) ?? '';
 }
 
@@ -112,12 +118,39 @@ function activate(context) {
 	// ---- terminal output capture (shell integration) ----
 	context.subscriptions.push(vscode.window.onDidStartTerminalShellExecution(async e => {
 		savedSessions.rememberTypedSsh(e.execution.commandLine.value);
-		append(e.terminal, `\n$ ${e.execution.commandLine.value}\n`);
+		append(e.terminal, `\n[${new Date().toLocaleTimeString()}] $ ${e.execution.commandLine.value}\n`);
 		try { for await (const d of e.execution.read()) { append(e.terminal, stripAnsi(d)); } } catch { /* terminal closed */ }
 	}));
 	context.subscriptions.push(vscode.window.onDidEndTerminalShellExecution(e => {
 		if (e.exitCode !== undefined) { append(e.terminal, `\n[exit code ${e.exitCode}]\n`); }
+		if (e.exitCode) {
+			showFailure(e.terminal, e.execution.commandLine.value, e.exitCode);
+		} else if (lastFailure?.terminal === e.terminal) {
+			hideFailure();
+		}
 	}));
+
+	// ---- ask the duck when a command fails ----
+	const failure = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+	failure.command = 'ddo.askAboutFailure';
+	failure.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+	context.subscriptions.push(failure);
+	/** @type {{ terminal: vscode.Terminal, command: string, exitCode: number } | undefined} */
+	let lastFailure;
+	/** @type {NodeJS.Timeout | undefined} */
+	let failureTimer;
+	const hideFailure = () => { lastFailure = undefined; failure.hide(); clearTimeout(failureTimer); };
+	/** @param {vscode.Terminal} terminal @param {string} command @param {number} exitCode */
+	function showFailure(terminal, command, exitCode) {
+		if (!cfg().get('chat.askOnFailure', true)) { return; }
+		lastFailure = { terminal, command, exitCode };
+		failure.text = '$(warning) Ask the duck';
+		failure.tooltip = `\`${command.slice(0, 80)}\` failed (exit code ${exitCode}). Ask the duck why.`;
+		failure.show();
+		clearTimeout(failureTimer);
+		failureTimer = setTimeout(hideFailure, 2 * 60 * 1000);
+	}
+	context.subscriptions.push(vscode.window.onDidCloseTerminal(t => { if (lastFailure?.terminal === t) { hideFailure(); } }));
 
 	// ---- log files ----
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(ed => {
@@ -238,12 +271,35 @@ function activate(context) {
 	reg('ddo.setupAgents', () => agents.setUpAgents());
 	reg('ddo.recommendedExtensions', () => opsExtensions.showRecommendedExtensions());
 	reg('ddo.checkForUpdates', () => update.checkForUpdates(context, true));
+	const askDuck = (/** @type {string} */ query) => vscode.commands.executeCommand('workbench.action.chat.open', { query, isPartialQuery: false });
+	reg('ddo.askAboutFailure', async () => {
+		if (!lastFailure) { return; }
+		const { terminal, command, exitCode } = lastFailure;
+		hideFailure();
+		askedTerminal = terminal;
+		await askDuck(`@duck /explain \`${command}\` failed with exit code ${exitCode}.`);
+	});
+	reg('ddo.askAboutTerminalSelection', async () => {
+		const terminal = vscode.window.activeTerminal;
+		const selection = /** @type {any} */ (terminal)?.selection;
+		if (!terminal || !selection) { return; }
+		askedTerminal = terminal;
+		await askDuck(`@duck Explain this terminal output:\n\`\`\`\n${String(selection).slice(0, 6000)}\n\`\`\``);
+	});
+	reg('ddo.saveSummary', async (/** @type {string} */ text) => {
+		const document = await vscode.workspace.openTextDocument({ content: text, language: 'markdown' });
+		await vscode.window.showTextDocument(document, { viewColumn: vscode.ViewColumn.One, preview: false });
+	});
 
 	// ---- chat participant ----
 	const participant = vscode.chat.createChatParticipant('ddo.duck', async (request, chatCtx, stream, token) => {
 		const parts = [];
-		const term = recentTerminalOutput();
+		const term = recentTerminalOutput(request.command === 'summary' ? 3 : 1);
 		if (term) { parts.push(`Recent terminal output:\n\`\`\`\n${term}\n\`\`\``); }
+		if (request.command === 'summary' && !term) {
+			stream.markdown('There is no terminal output to sum up yet. Run some commands in the terminal first (with shell integration on, as in a new DuckDuckOps terminal).');
+			return {};
+		}
 
 		if (request.command === 'logs') {
 			const ed = vscode.window.visibleTextEditors.find(e => e.document.uri.scheme === 'file') ?? vscode.window.activeTextEditor;
@@ -256,6 +312,7 @@ function activate(context) {
 			explain: 'Explain what happened in the latest terminal output, root cause first.',
 			fix: 'Diagnose the latest failure and suggest the minimal safe commands to fix it.',
 			logs: 'Analyze the log: summarise errors/warnings, notable patterns, a timeline, and suggested next diagnostic commands.',
+			summary: 'Write an incident summary of this terminal session, in Markdown, for a ticket or a hand-over. Sections: "Summary" (two or three sentences: what was wrong and the state now), "Timeline" (the commands that mattered, with their times in brackets, one line each, and what each showed), "Cause" (or "Not found yet"), "What was changed" (commands that changed something, or "Nothing"), "Open points". Use only the terminal output above; write "unknown" rather than guessing. No commands to run unless they are open points.',
 			rubberduck: 'Be a rubber duck. The user talks the problem through and finds the cause themselves. Do not give the cause, the fix or commands. Ask one short question at a time about what they expected, what happened, what changed and what they already ruled out, using the terminal output above. When they ask you directly for the answer, give it.',
 		}[request.command ?? ''] ?? '';
 
@@ -272,6 +329,10 @@ function activate(context) {
 			for await (const chunk of resp.text) { full += chunk; stream.markdown(chunk); }
 		} catch (err) {
 			stream.markdown(`\n\n**Model request failed:** ${err instanceof Error ? err.message : String(err)}\n\nMake sure GitHub Copilot is signed in.`);
+			return {};
+		}
+		if (request.command === 'summary') {
+			stream.button({ command: 'ddo.saveSummary', title: 'Open as Markdown', arguments: [full] });
 			return {};
 		}
 		for (const cmd of request.command === 'rubberduck' ? [] : extractCommands(full)) {

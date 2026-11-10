@@ -21,7 +21,8 @@
     "onStartupFinished"
   ],
   "enabledApiProposals": [
-    "terminalDataWriteEvent"
+    "terminalDataWriteEvent",
+    "terminalSelection"
   ],
   "capabilities": {
     "virtualWorkspaces": false,
@@ -180,6 +181,21 @@
         "command": "ddo.sessions.copyToSaved",
         "title": "Copy to My Sessions",
         "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.askAboutFailure",
+        "title": "Ask the Duck About the Failed Command",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.askAboutTerminalSelection",
+        "title": "Ask the Duck",
+        "category": "DuckDuckOps"
+      },
+      {
+        "command": "ddo.saveSummary",
+        "title": "Open Summary as Markdown",
+        "category": "DuckDuckOps"
       }
     ],
     "keybindings": [
@@ -256,6 +272,10 @@
           {
             "name": "logs",
             "description": "Analyze the active log file (errors, patterns, timeline)"
+          },
+          {
+            "name": "summary",
+            "description": "Sum up this terminal session as an incident report (timeline, cause, changes, open points)"
           }
         ]
       }
@@ -318,6 +338,11 @@
           "type": "boolean",
           "default": true,
           "description": "Ask for confirmation before running a chat-suggested command."
+        },
+        "ddo.chat.askOnFailure": {
+          "type": "boolean",
+          "default": true,
+          "description": "When a terminal command fails, show \"Ask the duck\" in the status bar for two minutes."
         },
         "ddo.logs.autoOpen": {
           "type": "boolean",
@@ -620,6 +645,21 @@
         {
           "command": "ddo.sessions.copyToSaved",
           "when": "false"
+        },
+        {
+          "command": "ddo.askAboutTerminalSelection",
+          "when": "terminalTextSelected"
+        },
+        {
+          "command": "ddo.saveSummary",
+          "when": "false"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "ddo.askAboutTerminalSelection",
+          "when": "terminalTextSelected",
+          "group": "0_ddo@1"
         }
       ]
     },
