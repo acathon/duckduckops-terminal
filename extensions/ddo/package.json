@@ -491,6 +491,34 @@
           "type": "string",
           "default": "acathon/duckduckops-terminal",
           "description": "The GitHub repository (owner/name) whose releases the update check looks at."
+        },
+        "ddo.terminal.welcomeLines": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "weather",
+              "joke",
+              "tip"
+            ],
+            "enumDescriptions": [
+              "The weather, next to the date (from wttr.in).",
+              "An ops joke.",
+              "A DuckDuckOps tip, now and then."
+            ]
+          },
+          "default": [
+            "weather",
+            "joke",
+            "tip"
+          ],
+          "markdownDescription": "Lines written at the top of each new terminal, under the date: `weather`, `joke`, `tip`. An empty list writes nothing."
+        },
+        "ddo.terminal.weatherLocation": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "The city for the weather line, for example `Paris` or `Lyon, France`. Empty: [wttr.in](https://wttr.in) guesses it from your network address."
         }
       }
     },
