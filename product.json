@@ -221,6 +221,12 @@
 			"type": "dark"
 		},
 		{
+			"id": "forge-hackerman-dark",
+			"label": "Forge Hackerman Dark",
+			"themeId": "Forge Hackerman Dark",
+			"type": "dark"
+		},
+		{
 			"id": "dark-2026",
 			"label": "Dark 2026",
 			"themeId": "Dark 2026",
@@ -236,6 +242,12 @@
 			"id": "forge-light",
 			"label": "Forge Light",
 			"themeId": "Forge Light",
+			"type": "light"
+		},
+		{
+			"id": "forge-hackerman-light",
+			"label": "Forge Hackerman Light",
+			"themeId": "Forge Hackerman Light",
 			"type": "light"
 		},
 		{

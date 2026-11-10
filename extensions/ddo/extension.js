@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 // @ts-check
 'use strict';
 const vscode = require('vscode');
@@ -8,6 +12,7 @@ const sessions = require('./sessions');
 const shell = require('./shell');
 const update = require('./update');
 const opsExtensions = require('./opsExtensions');
+const themes = require('./themes');
 
 const cfg = () => vscode.workspace.getConfiguration('ddo');
 const LOG_RE = /\.(log|txt|out|err)(\.\d+)?$/i;
@@ -17,7 +22,6 @@ const buffers = new WeakMap();
 const tailed = new Set();
 
 function stripAnsi(s) {
-	// eslint-disable-next-line no-control-regex
 	return s.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)|\u001b\[[0-9;?]*[ -\/]*[@-~]|\u001b[@-Z\\-_]|\r/g, '');
 }
 
@@ -271,6 +275,7 @@ function activate(context) {
 	reg('ddo.setupAgents', () => agents.setUpAgents());
 	reg('ddo.recommendedExtensions', () => opsExtensions.showRecommendedExtensions());
 	reg('ddo.checkForUpdates', () => update.checkForUpdates(context, true));
+	reg('ddo.chooseTheme', () => themes.chooseTheme());
 	const askDuck = (/** @type {string} */ query) => vscode.commands.executeCommand('workbench.action.chat.open', { query, isPartialQuery: false });
 	reg('ddo.askAboutFailure', async () => {
 		if (!lastFailure) { return; }
@@ -336,7 +341,7 @@ function activate(context) {
 			return {};
 		}
 		for (const cmd of request.command === 'rubberduck' ? [] : extractCommands(full)) {
-			stream.button({ command: 'ddo.runInTerminal', title: `▶ Run: ${cmd.split('\n')[0].slice(0, 48)}`, arguments: [cmd] });
+			stream.button({ command: 'ddo.runInTerminal', title: `\u25B6 Run: ${cmd.split('\n')[0].slice(0, 48)}`, arguments: [cmd] });
 		}
 		return {};
 	});

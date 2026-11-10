@@ -173,6 +173,11 @@
         "category": "DuckDuckOps"
       },
       {
+        "command": "ddo.chooseTheme",
+        "title": "Choose Theme: Forge or Hackerman, Light, Dark or Like Windows...",
+        "category": "DuckDuckOps"
+      },
+      {
         "command": "ddo.checkForUpdates",
         "title": "Check for Updates...",
         "category": "DuckDuckOps"
@@ -247,6 +252,18 @@
         "label": "Forge Dark",
         "uiTheme": "vs-dark",
         "path": "./themes/forge-dark-color-theme.json"
+      },
+      {
+        "id": "Forge Hackerman Light",
+        "label": "Forge Hackerman Light",
+        "uiTheme": "vs",
+        "path": "./themes/forge-hackerman-light-color-theme.json"
+      },
+      {
+        "id": "Forge Hackerman Dark",
+        "label": "Forge Hackerman Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/forge-hackerman-dark-color-theme.json"
       }
     ],
     "iconThemes": [
