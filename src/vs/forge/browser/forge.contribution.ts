@@ -60,6 +60,9 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 		// `forge.css`), the menu is a button in the activity bar, the terminal and
 		// chat titles show icons instead of labels
 		'window.menuBarVisibility': 'compact',
+		// The buttons of a view's title (the folder panel's Details View / Tree View,
+		// hidden files, sort...) always shown, not only on hover
+		'workbench.view.alwaysShowHeaderActions': true,
 		'workbench.panel.showLabels': false,
 		'workbench.secondarySideBar.showLabels': false,
 		// Forge Light and Forge Dark from the `ddo` extension

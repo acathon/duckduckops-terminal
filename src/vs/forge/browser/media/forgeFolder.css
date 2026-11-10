@@ -96,17 +96,27 @@
 	margin-left: 6px;
 }
 
+/* A narrow card: short values (15m, 12K) in narrow columns */
+.forge-folder.compact .forge-folder-column.time,
+.forge-folder.compact .forge-folder-column-title.time {
+	width: 34px;
+}
+
+.forge-folder.compact .forge-folder-column.size,
+.forge-folder.compact .forge-folder-column-title.size {
+	width: 38px;
+	margin-left: 4px;
+}
+
 .forge-folder .forge-folder-column.hidden,
 .forge-folder.no-size-column .forge-folder-column.size,
-.forge-folder.no-size-column .forge-folder-column-title.size,
-.forge-folder.no-time-column .forge-folder-column.time,
-.forge-folder.no-time-column .forge-folder-column-title.time {
+.forge-folder.no-size-column .forge-folder-column-title.size {
 	display: none;
 }
 
 /* The name keeps room for its icon and a few letters whatever the columns take */
 .forge-folder .forge-folder-row .monaco-icon-label {
-	min-width: 72px;
+	min-width: 60px;
 }
 
 .forge-folder .forge-folder-columns {
@@ -154,6 +164,12 @@
 	text-align: center;
 	font-size: 11px;
 	font-weight: 600;
+}
+
+/* Without a mark the badge takes no room */
+.forge-folder .forge-folder-badge:empty {
+	width: 0;
+	margin: 0 4px 0 0;
 }
 
 /* Next to the terminal, the panel shows the terminal and the folder as two cards, with

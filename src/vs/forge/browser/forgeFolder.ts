@@ -69,9 +69,35 @@ const MAX_ROWS = 3000;
 
 const DETAILS_STORAGE_KEY = 'ddo.folder.details';
 
-/** Below these widths (px) the details view leaves out Size, then Modified, to keep room for the names */
-const NARROW_SIZE = 300;
-const NARROW_TIME = 230;
+/** Below this width (px) the details columns get short (15m, 2d, 12K) to keep room for the names */
+const COMPACT_WIDTH = 340;
+/** Below this width only Modified stays next to the names */
+const NO_SIZE_WIDTH = 190;
+
+/** How long ago, in a few letters: now, 15m, 3h, 2d, 1w, 4mo, 6y */
+function shortAge(time: number): string {
+	const minutes = Math.max(0, Date.now() - time) / 60_000;
+	const days = minutes / 1440;
+	return minutes < 1 ? localize('ddo.folder.now', "now")
+		: minutes < 60 ? `${Math.floor(minutes)}m`
+			: minutes < 1440 ? `${Math.floor(minutes / 60)}h`
+				: days < 7 ? `${Math.floor(days)}d`
+					: days < 31 ? `${Math.floor(days / 7)}w`
+						: days < 365 ? `${Math.floor(days / 30)}mo`
+							: `${Math.floor(days / 365)}y`;
+}
+
+/** A size in a few letters: 512B, 12K, 1.2M, 3.4G */
+function shortSize(size: number): string {
+	const units = ['B', 'K', 'M', 'G', 'T'];
+	let value = size;
+	let unit = 0;
+	while (value >= 1024 && unit < units.length - 1) {
+		value /= 1024;
+		unit++;
+	}
+	return `${unit > 0 && value < 10 ? value.toFixed(1) : Math.round(value)}${units[unit]}`;
+}
 
 type Mark = 'added' | 'changed' | 'removed' | 'mentioned';
 
@@ -127,6 +153,7 @@ class FolderRenderer implements ITreeRenderer<IFolderEntry, void, IFolderTemplat
 	constructor(
 		private readonly labels: ResourceLabels,
 		private readonly showsDetails: () => boolean,
+		private readonly isCompact: () => boolean,
 	) { }
 
 	renderTemplate(container: HTMLElement): IFolderTemplate {
@@ -145,9 +172,11 @@ class FolderRenderer implements ITreeRenderer<IFolderEntry, void, IFolderTemplat
 		const details = this.showsDetails() && entry.kind === 'entry';
 		template.time.classList.toggle('hidden', !this.showsDetails());
 		template.size.classList.toggle('hidden', !this.showsDetails());
-		template.time.textContent = details && entry.mtime ? fromNow(entry.mtime, true) : '';
+		const compact = this.isCompact();
+		template.time.textContent = details && entry.mtime ? (compact ? shortAge(entry.mtime) : fromNow(entry.mtime, true)) : '';
 		template.time.title = details && entry.mtime ? new Date(entry.mtime).toLocaleString() : '';
-		template.size.textContent = details && !entry.isDirectory && entry.size !== undefined ? ByteSize.formatSize(entry.size) : '';
+		template.size.textContent = details && !entry.isDirectory && entry.size !== undefined ? (compact ? shortSize(entry.size) : ByteSize.formatSize(entry.size)) : '';
+		template.size.title = details && !entry.isDirectory && entry.size !== undefined ? ByteSize.formatSize(entry.size) : '';
 		if (entry.kind === 'more') {
 			template.label.setLabel(entry.name, undefined, { italic: true, hideIcon: true });
 			return;
@@ -202,6 +231,8 @@ export class ForgeFolderView extends ViewPane {
 	private bodySize: { height: number; width: number } | undefined;
 	/** Sizes and dates in columns, the details view: on unless turned off */
 	private detailsShown: boolean;
+	/** A narrow card: the details columns are short */
+	private compact = false;
 
 	private readonly terminalStore = this._register(new DisposableStore());
 	private readonly watcher = this._register(new MutableDisposable<DisposableStore>());
@@ -284,7 +315,7 @@ export class ForgeFolderView extends ViewPane {
 		};
 		const tree = this.tree = this._register(this.instantiationService.createInstance(
 			WorkbenchAsyncDataTree<IFolderInput, IFolderEntry>,
-			'ForgeFolder', treeContainer, new FolderDelegate(), [new FolderRenderer(labels, () => this.showsDetails())], dataSource, {
+			'ForgeFolder', treeContainer, new FolderDelegate(), [new FolderRenderer(labels, () => this.showsDetails(), () => this.compact)], dataSource, {
 			identityProvider: { getId: (entry: IFolderEntry) => `${entry.kind}:${entry.relative}` },
 			accessibilityProvider: new FolderAccessibilityProvider(),
 			multipleSelectionSupport: false,
@@ -319,9 +350,17 @@ export class ForgeFolderView extends ViewPane {
 		// before it (forgeFolder.css) comes out of its width
 		const gap = Number.parseFloat(dom.getWindow(this.element).getComputedStyle(this.element).marginLeft) || 0;
 		const treeWidth = Math.max(0, width - gap);
-		// The names come first: in a narrow card the Size column goes, then Modified
-		this.bodyElement?.classList.toggle('no-size-column', treeWidth < NARROW_SIZE);
-		this.bodyElement?.classList.toggle('no-time-column', treeWidth < NARROW_TIME);
+		// The details stay, the names keep room: in a narrow card the columns get short
+		const compact = treeWidth < COMPACT_WIDTH;
+		this.bodyElement?.classList.toggle('compact', compact);
+		this.bodyElement?.classList.toggle('no-size-column', treeWidth < NO_SIZE_WIDTH);
+		if (compact !== this.compact) {
+			this.compact = compact;
+			this.renderColumns();
+			if (this.input) {
+				this.tree?.rerender();
+			}
+		}
 		const statusHeight = this.statusElement?.classList.contains('visible') ? this.statusElement.offsetHeight : 0;
 		const columnsHeight = this.columnsElement?.classList.contains('visible') ? this.columnsElement.offsetHeight : 0;
 		this.tree?.layout(Math.max(0, height - statusHeight - columnsHeight), treeWidth);
@@ -743,7 +782,7 @@ export class ForgeFolderView extends ViewPane {
 			});
 		};
 		column('name', localize('ddo.folder.columnName', "Name"), 'name');
-		column('time', localize('ddo.folder.columnModified', "Modified"), 'time');
+		column('time', this.compact ? localize('ddo.folder.columnModifiedShort', "Mod.") : localize('ddo.folder.columnModified', "Modified"), 'time');
 		column('size', localize('ddo.folder.columnSize', "Size"), 'size');
 		if (columns.classList.contains('visible') !== visible) {
 			columns.classList.toggle('visible', visible);
@@ -1019,7 +1058,8 @@ registerAction2(class extends Action2 {
 			title: localize2('ddo.folder.detailsView', "Details View: Names, Modified and Size"),
 			icon: Codicon.table,
 			toggled: { condition: ShowsDetailsContext, icon: Codicon.listTree, title: localize('ddo.folder.treeView', "Tree View: Names Only") },
-			menu: { id: MenuId.ViewTitle, when: inFolderView, group: 'navigation', order: 2 },
+			// First of the folder panel's title buttons
+			menu: { id: MenuId.ViewTitle, when: inFolderView, group: 'navigation', order: 0 },
 		});
 	}
 	run(accessor: ServicesAccessor): void {

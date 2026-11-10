@@ -14,7 +14,7 @@ The folder panel becomes a tree with a details view, on a card of its own next t
 
 ### New
 - **The folder panel is a tree**: click a folder to open it in place, click again to close it; double-click still goes there in the terminal (`cd`). Hidden files and the order follow the last listing command in every folder you open.
-- **Details view**: **Name**, **Modified** and **Size** columns, with the column titles on top; click a title to sort by it, again to reverse. When the panel is narrow, Size and then Modified make room for the names. The button in the Folder title switches between **Details View** and **Tree View** (names only), and it is remembered.
+- **Details view**: **Name**, **Modified** and **Size** columns, with the column titles on top; click a title to sort by it, again to reverse. The details view is the default and stays in a narrow panel, with short values (`15m`, `2d`, `12K`; the full date and size on hover). The first button at the top right of the Folder panel switches to **Tree View** (names only) and back to **Details View**, and it is remembered. The buttons in the title of every view are now always shown, not only when the mouse is over it.
 - **Two cards**: the terminal and the folder panel are now separate cards side by side, with the same gap as between the chat and the side bar.
 
 ### Things to know
