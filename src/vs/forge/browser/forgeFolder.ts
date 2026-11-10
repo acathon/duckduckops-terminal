@@ -69,6 +69,10 @@ const MAX_ROWS = 3000;
 
 const DETAILS_STORAGE_KEY = 'ddo.folder.details';
 
+/** Below these widths (px) the details view leaves out Size, then Modified, to keep room for the names */
+const NARROW_SIZE = 300;
+const NARROW_TIME = 230;
+
 type Mark = 'added' | 'changed' | 'removed' | 'mentioned';
 
 interface IFolderEntry {
@@ -191,6 +195,7 @@ export class ForgeFolderView extends ViewPane {
 	private input: IFolderInput | undefined;
 	/** The folder's own rows, as the tree shows them at the top level */
 	private rows: IFolderEntry[] = [];
+	private bodyElement: HTMLElement | undefined;
 	private statusElement: HTMLElement | undefined;
 	private columnsElement: HTMLElement | undefined;
 	private messageElement: HTMLElement | undefined;
@@ -266,6 +271,7 @@ export class ForgeFolderView extends ViewPane {
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 		container.classList.add('forge-folder', 'show-file-icons');
+		this.bodyElement = container;
 		this.statusElement = dom.append(container, dom.$('.forge-folder-status'));
 		this.columnsElement = dom.append(container, dom.$('.forge-folder-columns'));
 		this.messageElement = dom.append(container, dom.$('.forge-folder-message'));
@@ -312,9 +318,13 @@ export class ForgeFolderView extends ViewPane {
 		// Next to the terminal the panel shows this view as a card of its own: the gap
 		// before it (forgeFolder.css) comes out of its width
 		const gap = Number.parseFloat(dom.getWindow(this.element).getComputedStyle(this.element).marginLeft) || 0;
+		const treeWidth = Math.max(0, width - gap);
+		// The names come first: in a narrow card the Size column goes, then Modified
+		this.bodyElement?.classList.toggle('no-size-column', treeWidth < NARROW_SIZE);
+		this.bodyElement?.classList.toggle('no-time-column', treeWidth < NARROW_TIME);
 		const statusHeight = this.statusElement?.classList.contains('visible') ? this.statusElement.offsetHeight : 0;
 		const columnsHeight = this.columnsElement?.classList.contains('visible') ? this.columnsElement.offsetHeight : 0;
-		this.tree?.layout(Math.max(0, height - statusHeight - columnsHeight), Math.max(0, width - gap));
+		this.tree?.layout(Math.max(0, height - statusHeight - columnsHeight), treeWidth);
 	}
 
 	// --- Following the terminal
@@ -1005,9 +1015,10 @@ registerAction2(class extends Action2 {
 	constructor() {
 		super({
 			id: 'ddo.folder.toggleDetails',
-			title: localize2('ddo.folder.showDetails', "Show Sizes and Dates"),
-			icon: Codicon.listFlat,
-			toggled: { condition: ShowsDetailsContext, title: localize('ddo.folder.hideDetails', "Hide Sizes and Dates") },
+			// The button shows the view it switches to
+			title: localize2('ddo.folder.detailsView', "Details View: Names, Modified and Size"),
+			icon: Codicon.table,
+			toggled: { condition: ShowsDetailsContext, icon: Codicon.listTree, title: localize('ddo.folder.treeView', "Tree View: Names Only") },
 			menu: { id: MenuId.ViewTitle, when: inFolderView, group: 'navigation', order: 2 },
 		});
 	}

@@ -87,17 +87,26 @@
 
 .forge-folder .forge-folder-column.time,
 .forge-folder .forge-folder-column-title.time {
-	width: 84px;
+	width: 72px;
 }
 
 .forge-folder .forge-folder-column.size,
 .forge-folder .forge-folder-column-title.size {
-	width: 64px;
+	width: 58px;
 	margin-left: 6px;
 }
 
-.forge-folder .forge-folder-column.hidden {
+.forge-folder .forge-folder-column.hidden,
+.forge-folder.no-size-column .forge-folder-column.size,
+.forge-folder.no-size-column .forge-folder-column-title.size,
+.forge-folder.no-time-column .forge-folder-column.time,
+.forge-folder.no-time-column .forge-folder-column-title.time {
 	display: none;
+}
+
+/* The name keeps room for its icon and a few letters whatever the columns take */
+.forge-folder .forge-folder-row .monaco-icon-label {
+	min-width: 72px;
 }
 
 .forge-folder .forge-folder-columns {

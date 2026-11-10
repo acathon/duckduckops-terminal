@@ -79,6 +79,11 @@ try {
 	const [terminalBox, folderBox] = await Promise.all([box('.part.panel .terminal-wrapper'), box('.part.panel .forge-folder')]);
 	checks['folder panel right of the terminal'] = !!terminalBox && !!folderBox && folderBox.x >= terminalBox.x + terminalBox.width - 1;
 	checks['folder panel lists files'] = await window.waitForSelector('.part.panel .forge-folder .forge-folder-row', { state: 'visible', timeout: 15_000 }).then(() => true, () => false);
+	// Names, not just rows: the details columns must leave them room
+	checks['folder panel shows names'] = await window.$$eval('.part.panel .forge-folder .forge-folder-row .label-name', names => names.some(name => {
+		const box = name.getBoundingClientRect();
+		return box.width >= 24 && !!name.textContent?.trim();
+	})).catch(() => false);
 
 	// An opened file (a log, through quick open) appears above the terminal
 	const logFile = path.join(profileDir, 'service.log');
