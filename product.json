@@ -6,7 +6,7 @@
 	"forge": {
 		"enabled": true,
 		"version": "0.5.0",
-		"copilotRuntime": false,
+		"copilotRuntime": true,
 		"builtInExtensions": [
 			"ddo",
 			"copilot",

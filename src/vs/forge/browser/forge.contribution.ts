@@ -90,13 +90,15 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerDefaultCon
 			'/^helm\\s+(install|upgrade|uninstall|rollback)\\b/': false,
 			'/^docker\\s+(rm|rmi|kill|stop|restart|system\\s+prune|volume\\s+rm|network\\s+rm)\\b/': false,
 		},
-		// Copilot CLI sessions and the Codex agent need the Copilot CLI runtime
-		// (Agent Host), see `forge.copilotRuntime`. So does the terminal's first
-		// line hint, which offers to type `copilot`.
+		// The Copilot harness (Agent Host, `forge.copilotRuntime`) can be picked in the
+		// chat's session target, but new chats keep the Local harness, where @duck and
+		// the Duck agents run. No Codex agent, and no terminal hint to type `copilot`.
+		'chat.defaultToCopilotHarness': false,
+		'chat.editor.preferCopilotHarness': false,
+		'chat.agentHost.codexAgent.enabled': false,
+		'terminal.integrated.initialHint': false,
 		...(product.forge?.copilotRuntime ? {} : {
 			'github.copilot.chat.backgroundAgent.enabled': false,
-			'chat.agentHost.codexAgent.enabled': false,
-			'terminal.integrated.initialHint': false,
 		}),
 	},
 	donotCache: true,
