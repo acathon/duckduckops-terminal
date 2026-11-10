@@ -8,14 +8,21 @@ Coding features are removed. Extensions can be installed from Open VSX, an inter
 VSIX files. Short name and command: `ddo`.
 
 ```
-+----------------------+-----------+------------+----+
-|       terminal       |           |            |    |
-+----------------------+  Copilot  | Extensions | AB |
-| files, logs, browser |   Chat    | (side bar) |    |
-| (only while open)    |           |            |    |
-+----------------------+-----------+------------+----+
++---------------+--------+-----------+------------+----+
+|   terminal    | folder |           |            |    |
++---------------+--------+  Copilot  | Extensions | AB |
+| files, logs, browser   |   Chat    | (side bar) |    |
+| (only while open)      |           |            |    |
++------------------------+-----------+------------+----+
 ```
 
+- The folder panel next to the terminal
+  ([`forgeFolder.ts`](src/vs/forge/browser/forgeFolder.ts)) shows the folder the terminal is in.
+  It follows `cd` through shell integration, and every command: listing commands (`ls -la`,
+  `Get-ChildItem -Force | Sort-Object LastWriteTime`, `dir /a /o:-d`, `ls *.log`) set how it shows
+  the folder ([`forgeFolderCommands.ts`](src/vs/forge/common/forgeFolderCommands.ts) reads them),
+  and after any command it marks what was added, changed or deleted, against the folder when the
+  command started. Double-clicking a folder runs `cd` in the terminal.
 - The area below the terminal appears when a file, log or web page (also one Copilot opens) is
   opened, as tabs, and disappears when the last one is closed.
 - The parts are rounded cards (the "Modern UI" style) on a grey frame, with 8px gaps instead of VS
@@ -26,8 +33,13 @@ VSIX files. Short name and command: `ddo`.
 - The menu is a button at the top of the activity bar (`window.menuBarVisibility`: `compact`). The
   title bar has a globe button that opens the integrated browser.
 - Themes: Forge Light and Forge Dark (from [`extensions/ddo/themes`](extensions/ddo/themes)) follow
-  the Windows light/dark mode. Light 2026, Dark 2026 and the two High Contrast themes are also there;
-  the other VS Code themes are removed.
+  the Windows light/dark mode. Forge Hackerman Light and Dark are generated from them by
+  [`build/ddo/hackermanThemes.ts`](build/ddo/hackermanThemes.ts); **DuckDuckOps: Choose Theme** picks
+  either family, light, dark or like Windows. Light 2026, Dark 2026 and the two High Contrast themes
+  are also there; the other VS Code themes are removed.
+- Icons: Forge Icons, the default file icon theme, and the activity bar's icons come from
+  [Phosphor](https://phosphoricons.com)'s two-tone icons (MIT, licence in
+  [`extensions/ddo/icons`](extensions/ddo/icons)), built by [`build/ddo/forgeIcons.ts`](build/ddo/forgeIcons.ts).
 - The side bar on the right is open at startup on Extensions. Switch views (Extensions, Accounts,
   Manage) from the compact activity bar, hide it with `Ctrl+B` or the toggle buttons in the title bar
   (which also toggle the terminal and the chat).

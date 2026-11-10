@@ -4,6 +4,31 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.7.0] - Folder
+
+A panel next to the terminal shows the folder you're in and follows everything you do there; new colour icons; and a second theme, Forge Hackerman.
+
+| On startup (0.4.0, until 0.7.0 screenshots are taken) | With a log open (0.4.0) |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, the chat and Extensions in Forge Light (0.4.0)"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal (0.4.0)"> |
+
+### New
+- **Folder panel**, right of the terminal: the folder the terminal is in, with PowerShell, cmd, WSL or Git Bash. It follows `cd`, and it follows everything else too:
+  - **listing commands** set how it shows the folder: hidden files (`ls -a`, `Get-ChildItem -Force`, `dir /a`), sizes and dates (`ls -l`), the order (`ls -t`, `-S`, `-X`, `-r`, `| Sort-Object LastWriteTime`, `dir /o:-d`), a pattern (`ls *.log`) or another folder (`ls /var/log`);
+  - **after any command** (`git pull`, `tar -x`, `rm`, a script...) it marks what was **new**, **changed** or **deleted**, and the files the command named. It updates while a long command runs.
+  - **Double-click a folder** to `cd` there in the terminal; **click a file** to open it below the terminal. Drag a file onto the terminal to type its path; right-click to copy its path or show it in File Explorer.
+- **Forge Icons**: colour icons for files and folders (logs, configs, scripts, keys and certificates, archives, Docker, Terraform, `.git`, `.ssh`...), from [Phosphor](https://phosphoricons.com). The activity bar's icons are Phosphor's two-tone icons.
+- **Forge Hackerman Dark and Light**: phosphor green on black, or deep green on mint, with a green terminal.
+- **DuckDuckOps: Choose Theme** in the Command Palette: Forge or Forge Hackerman, light, dark, or **like Windows** (light by day, dark at night, with your Windows setting).
+
+### Things to know
+- The folder panel needs the terminal's shell integration, on by default, to follow `cd` and commands. In a terminal connected over SSH it shows nothing: the files are on the other computer.
+- Hide the panel by right-clicking its title, or drag the line between it and the terminal to resize it.
+- If you picked another file icon theme before, it stays: pick **Forge Icons** under **File Icon Theme** in the Command Palette.
+
+### After updating
+- Run a few commands in the terminal (`ls -la`, `cd ..`, `git pull`) and watch the folder panel.
+
 ## [0.6.0] - Duo
 
 Several chats on different models, one above the other, that pass their answers to each other; and the duck now speaks up when a command fails.
