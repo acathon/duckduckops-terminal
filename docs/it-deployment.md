@@ -37,6 +37,13 @@ DuckDuckOps-Terminal-SystemSetup-x64-<version>.exe /VERYSILENT /SUPPRESSMSGBOXES
   `/MERGETASKS` to leave the PATH alone. A desktop icon, **Open with DuckDuckOps** in the Explorer
   menu and file associations are off unless added with `desktopicon`, `addcontextmenufiles`,
   `addcontextmenufolders` or `associatewithfiles`.
+- From 0.6.0 the installer also puts the `copilot` command on the PATH, as VS Code does:
+  `bin\copilot-shim\copilot.exe` in the install folder, which starts GitHub Copilot CLI (installed
+  separately, in `%LOCALAPPDATA%\GitHubCopilotCLI`) and, when it is missing, asks the user before
+  downloading and installing it. A silent install only adds the command and downloads nothing. Add
+  `/copilotcli=none` to leave it out, or set the DWORD policy `CopilotCliCommand` to `0` under
+  `HKLM\SOFTWARE\Policies\Microsoft\DuckDuckOps`: setup then leaves the command out and it never
+  installs Copilot CLI.
 - To update, run the newer installer the same way; it replaces the installed version. DuckDuckOps does
   not update itself and has no update server.
 - Intune detection rule: the registry key
@@ -49,7 +56,10 @@ DuckDuckOps-Terminal-SystemSetup-x64-<version>.exe /VERYSILENT /SUPPRESSMSGBOXES
 `DuckDuckOps.exe` (Electron) and its helper processes, all from the install folder. The terminal
 starts the user's shells (PowerShell, cmd, WSL, ...) like any terminal does. Saved sessions start
 Windows' own OpenSSH client (`C:\Windows\System32\OpenSSH\ssh.exe`) and Remote Desktop Connection
-(`mstsc.exe`); for an SSH proxy, `ssh.exe` starts `DuckDuckOps.exe` again as its `ProxyCommand`. Copilot's agents run
+(`mstsc.exe`); for an SSH proxy, `ssh.exe` starts `DuckDuckOps.exe` again as its `ProxyCommand`.
+From 0.6.0, Copilot chats on the Copilot harness run in the Agent Host, another `DuckDuckOps.exe`
+process, which starts the GitHub Copilot runtime from the install folder. It follows your
+organization's Copilot policies, including sandbox and permission rules. Copilot's agents run
 commands in that terminal only after the user approves them, apart from read-only diagnostics such
 as `Get-*`, `ipconfig /all` or `kubectl get`.
 
@@ -63,6 +73,9 @@ as `Get-*`, `ipconfig /all` or `kubectl get`.
 - `api.github.com`, once a day: looks for a newer DuckDuckOps release (setting `ddo.updates.check`,
   repository in `ddo.updates.repository`). It only shows a message with a link; nothing is downloaded
   or installed.
+- `github.com` (the `github/copilot-cli` releases) and its download host `*.githubusercontent.com`:
+  only when a user agrees to install GitHub Copilot CLI, from the `copilot` command or the per-user
+  installer's Copilot CLI page. Never during a silent install.
 - Anything the user adds: extensions, MCP servers, SSH hosts.
 
 DuckDuckOps itself sends no telemetry: no telemetry endpoint is configured in the build. The GitHub

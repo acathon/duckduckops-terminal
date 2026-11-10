@@ -45,8 +45,8 @@ internal code name), when `product.json` has `"forge": { "enabled": true }`.
 | Settings, keybindings, themes, accounts, output/logs | Welcome page, walkthroughs, tours, surveys, Zen mode |
 | Text editor (logs, Copilot diffs), multi-diff editor, Vim mode | Settings Sync, Profiles, Continue On, Remote Tunnels |
 | Integrated browser and Copilot's browser tools, Simple Browser | Process explorer, language status, inline chat in the editor |
-| Remote (for Open Remote - SSH etc.), accessibility | Copilot CLI runtime: Background Agent / Copilot CLI sessions, Agent Host |
-| Mermaid diagrams in chat | Agents window and "Open in Agents" |
+| Remote (for Open Remote - SSH etc.), accessibility | Agents window and "Open in Agents" |
+| Mermaid diagrams in chat, the Copilot harness (Agent Host) | Codex agent |
 
 How it is done:
 
@@ -62,18 +62,25 @@ How it is done:
   and the extension scanner skip the rest. The list also names extensions downloaded at build time from
   `builtInExtensions` (VSCodeVim, from Open VSX with a pinned version and checksum); to update Vim, change
   its `version`, `sha256` and `metadata` there.
-- **Copilot CLI runtime:** Copilot Chat (ask and agent mode, tools, MCP) and extensions that use the
-  chat and language model APIs run in the extension host and don't need it. The build leaves out the
-  Copilot CLI SDK (in the Copilot extension and the Agent Host's platform package, a few hundred MB),
-  the Agent Host is never started and Background Agent sessions are turned off. To ship it again, set
-  `"copilotRuntime": true` under `forge` in [`product.json`](product.json), e.g. when the GitHub org
-  enforces Copilot sandbox or permission settings, which need the Agent Host.
+- **Copilot CLI and the Copilot harness:** `"copilotRuntime": true` under `forge` in
+  [`product.json`](product.json) ships the Agent Host and the Copilot SDK runtime, so the chat's session
+  target offers **Copilot CLI** (sessions from the Copilot extension) and **Copilot** (the Copilot
+  harness, also used when the GitHub org enforces Copilot sandbox or permission settings). Both get the
+  MCP servers and the Duck agents. New chats keep the Local harness (`chat.defaultToCopilotHarness` is
+  off), where `@duck` runs. With `false`, the build leaves the runtime out (about 100 MB), Copilot CLI
+  sessions are off and the Agent Host is never started
+  ([`forgeAgentHostEnablementService.ts`](src/vs/forge/browser/forgeAgentHostEnablementService.ts)).
 - **What the build leaves out:** the standard workbench bundle and the Agents window
   ([`build/next/index.ts`](build/next/index.ts), DuckDuckOps windows never load them; `--agents` and
   agent session links open a DuckDuckOps window), Chromium's strings except English and French
   ([`build/gulpfile.vscode.ts`](build/gulpfile.vscode.ts)), the TypeScript compiler shared by the
-  TypeScript language extensions ([`build/lib/extensions.ts`](build/lib/extensions.ts)) and the
-  Copilot CLI launcher. That is about 110 MB less than 0.1.1.
+  TypeScript language extensions ([`build/lib/extensions.ts`](build/lib/extensions.ts)) and, without
+  the Copilot runtime, the Copilot CLI launcher.
+- **The `copilot` command:** VS Code's native launcher ([`copilot_shim/`](copilot_shim), Rust), which
+  runs GitHub Copilot CLI or offers to install it. Microsoft compiles it in its own pipeline, so the
+  release workflow builds it after packaging and puts it in `bin\copilot-shim`, where the Copilot
+  extension adds it to the terminal's PATH and setup publishes it
+  ([`build/win32/copilot.iss`](build/win32/copilot.iss)). Building it needs the MSVC linker.
 - **Layout and defaults:** [`forge.contribution.ts`](src/vs/forge/browser/forge.contribution.ts),
   [`forgeWorkbench.ts`](src/vs/forge/browser/forgeWorkbench.ts) and the
   [`extensions/ddo`](extensions/ddo) extension.
@@ -128,6 +135,25 @@ Three Copilot custom agents work on an ops task together, each on its own model:
   way stops and asks the Reviewer. Both ideas come from
   [TokenEconomizer](https://github.com/microsoft/TokenEconomizer) (Microsoft Research, Apache-2.0),
   which itself is a plugin for agent CLIs and does not run inside Copilot Chat.
+
+## Duo
+
+Up to three chats stacked in the chat column ([`forgeDuo.ts`](src/vs/forge/browser/forgeDuo.ts)): chats 2
+and 3 are more chat views in the chat container, each with its own session (its own memento in
+`ChatViewPane`), model, agent and session target (Local or Copilot harness). **Add Chat** opens one
+more; the close button on the last one removes it.
+
+**Let the Chats Talk** passes each finished answer (`getFinalResponse()`) to the next chat as its next
+message, with the instruction in `ddo.duo.instruction`, in turn (1 → 2 → 3 → 1). It stops when an answer
+ends with `DONE`, after `ddo.duo.maxTurns` answers, when a request is cancelled, or with **Stop**.
+
+## The duck and the terminal
+
+- When a command fails, **Ask the duck** shows in the status bar for two minutes (`ddo.chat.askOnFailure`)
+  and asks `@duck` about that command, its exit code and its terminal's output.
+- **Ask the Duck** in the terminal's context menu asks about the selected text.
+- `@duck /summary` writes an incident summary of the terminal session (the commands carry their times),
+  which **Open as Markdown** opens in an editor.
 
 ## Sessions
 

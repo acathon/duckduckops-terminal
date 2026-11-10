@@ -2,7 +2,7 @@
   "name": "ddo",
   "displayName": "DuckDuckOps",
   "description": "Terminal-first workstation: terminal with files below it, AI chat on the right.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "publisher": "ddo",
   "license": "MIT",
   "icon": "media/icon.png",

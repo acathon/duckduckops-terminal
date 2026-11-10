@@ -4,13 +4,39 @@ Each release on GitHub uses the matching section below as its notes. Every versi
 Write for someone deciding whether to update: what is new, what changed, what to do after updating.
 For each release, take screenshots of the build (`node build/ddo/smoke.ts <app folder> docs/screenshots/<version>`, or the `ddo-smoke` artifact of the branch's build), keep `desktop-terminal.png` and `desktop-file.png` plus any screen that changed, and show them as in the sections below.
 
+## [0.6.0] - Duo
+
+Several chats on different models, one above the other, that pass their answers to each other; and the duck now speaks up when a command fails.
+
+| On startup (0.4.0, until 0.6.0 screenshots are taken) | With a log open (0.4.0) |
+|---|---|
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, the chat and Extensions in Forge Light (0.4.0)"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal (0.4.0)"> |
+
+### New
+- **Duo: up to three chats in the chat column**, one above the other. **Add Chat** in the chat's title opens another; each one has its own conversation, model and agent. For example: Chat 1 on Sonnet investigates in the terminal, Chat 2 on Opus or GPT checks each step.
+- **Let the Chats Talk**: each finished answer goes to the next chat, which checks it or takes the next step, in turn. They stop when one says the task is DONE, after 6 answers (`ddo.duo.maxTurns`), or with **Stop**. You can read and type in every chat while they talk.
+- **Ask the duck when a command fails**: after a failed command, **Ask the duck** shows in the status bar for two minutes; it asks `@duck` about that command and its output.
+- **Ask the Duck** in the terminal's right-click menu asks about the selected text.
+- **`@duck /summary`** writes an incident summary of your terminal session: timeline with times, cause, what was changed, open points. **Open as Markdown** turns it into a document for a ticket.
+- **Copilot CLI is back**: in the chat's session target you can pick **Copilot CLI** or **Copilot** (the Copilot harness) instead of **Local**. Their sessions keep running when the window closes, they use your MCP servers and the Duck agents, and your organization's Copilot sandbox and permission rules apply.
+- **`copilot` in the terminal** starts GitHub Copilot CLI, as in VS Code. If it isn't installed, it shows where to get it and asks before installing it; the installer can also install it for you.
+
+### Things to know
+- Every answer in every chat is a Copilot request, and premium models count more. Talking chats use several requests per question.
+- New chats still start on the **Local** harness, where `@duck` runs. `@duck` is not available in Copilot CLI and Copilot chats.
+- The installers add the `copilot` command to the PATH next to `ddo`, unless you clear **Add to PATH** or pick otherwise on the Copilot CLI page. IT can leave it out, see the deployment notes.
+- The app is about 100 MB bigger again, for the Copilot harness (the Agent Host).
+
+### After updating
+- Open a second chat with **Add Chat** (the split icon in the chat's title), pick a model in each, ask in the first one, then **Let the Chats Talk**.
+
 ## [0.5.0] - Sessions
 
 Your servers in a list, like in MobaXterm: one click opens SSH, a tunnel or Remote Desktop, and every connection is saved.
 
-| On startup | With a log open |
+| On startup (0.4.0, until 0.5.0 screenshots are taken) | With a log open (0.4.0) |
 |---|---|
-| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.5.0/desktop-terminal.png?raw=true" width="420" alt="The Sessions list in the right side bar, next to the terminal and the chat"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.5.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal"> |
+| <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-terminal.png?raw=true" width="420" alt="The terminal, the chat and Extensions in Forge Light (0.4.0)"> | <img src="https://github.com/acathon/duckduckops-terminal/blob/main/docs/screenshots/0.4.0/desktop-file.png?raw=true" width="420" alt="A log file below the terminal (0.4.0)"> |
 
 ### New
 - **Sessions**, in the right side bar: SSH, SSH tunnels, Remote Desktop and local shells, in folders. Click one to connect.
